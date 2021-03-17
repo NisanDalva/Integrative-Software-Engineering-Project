@@ -1,4 +1,4 @@
-package DanielHays.Team;
+package project;
 
 import java.util.Date;
 import java.util.HashMap;

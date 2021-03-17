@@ -1,4 +1,4 @@
-package DanielHays.Team;
+package project;
 
 //{
 //	"first":"Jane",

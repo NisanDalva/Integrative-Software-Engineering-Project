@@ -1,4 +1,4 @@
-package DanielHays.Team;
+package project;
 
 public class Location {
 	private Double lat;

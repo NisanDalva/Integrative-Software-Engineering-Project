@@ -1,4 +1,4 @@
-package DanielHays.Team;
+package project;
 
 
 import org.springframework.http.MediaType;
