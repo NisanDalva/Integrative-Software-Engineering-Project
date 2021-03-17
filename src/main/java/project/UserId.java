@@ -41,5 +41,4 @@ public class UserId {
 		return "UserId [space=" + space + ", email=" + email + "]";
 	}
 	
-	
 }
