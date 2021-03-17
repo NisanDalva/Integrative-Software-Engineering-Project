@@ -6,13 +6,12 @@ import java.util.Map;
 
 public class ProductBoundary {
 	
-	// will create an abstract class???
 	private ItemId itemId;
 	private String type;
 	private String name;
 	private Boolean active;
 	private Date createdTimestamp;
-	// created by and userId
+	private CreatedBy createdBy;
 	private Location location;
 	private Map<String, Object> itemAttributes;
 	
@@ -25,11 +24,12 @@ public class ProductBoundary {
 	}
 
 
-	public ProductBoundary(ItemId itemId, String type, String name /* userId */) {
+	public ProductBoundary(ItemId itemId, String type, String name, CreatedBy createdBy) {
 		this();
 		this.itemId = itemId;
 		this.type = type;
 		this.name = name;
+		this.createdBy = createdBy;
 	}
 
 
@@ -103,12 +103,21 @@ public class ProductBoundary {
 	}
 
 
+	public CreatedBy getCreatedBy() {
+		return createdBy;
+	}
+
+
+	public void setCreatedBy(CreatedBy createdBy) {
+		this.createdBy = createdBy;
+	}
+
+
 	@Override
 	public String toString() {
 		return "ProductBoundary [itemId=" + itemId + ", type=" + type + ", name=" + name + ", active=" + active
-				+ ", createdTimestamp=" + createdTimestamp + ", location=" + location + ", itemAttributes="
-				+ itemAttributes + "]";
+				+ ", createdTimestamp=" + createdTimestamp + ", createdBy=" + createdBy + ", location=" + location
+				+ ", itemAttributes=" + itemAttributes + "]";
 	}
-	
-	
+
 }

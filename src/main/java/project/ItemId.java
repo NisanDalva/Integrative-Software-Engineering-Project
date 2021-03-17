@@ -2,7 +2,7 @@ package project;
 
 public class ItemId {
 	private String space;
-	private String id; // Integer ??
+	private String id;
 	
 	
 	public ItemId() {

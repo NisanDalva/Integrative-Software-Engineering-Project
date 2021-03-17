@@ -26,7 +26,9 @@ public class ItemController {
 		
 		// STUB implementation
 		ItemId id = new ItemId(itemSpace, itemId);
-		ProductBoundary rv = new ProductBoundary(id, "product type", "product name");
+		CreatedBy createdBy = new CreatedBy(new UserId(userSpace, userEmail));
+		
+		ProductBoundary rv = new ProductBoundary(id, "product type", "product name", createdBy);
 		
 		rv.getItemAttributes().put("type", eTypes.MEAL.name());
 		rv.getItemAttributes().put("price", 53.5);
