@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class ItemController {
 	
-	private enum eTypes {MEAL, DRINK, SOUCE};
+	public enum eTypes {MEAL, DRINK, SOUCE};
 	
 	public ItemController() {
 	}
