@@ -19,7 +19,7 @@ public class ItemController {
 		path = "/twins/items/{userSpace}/{userEmail}/{itemSpace}/{itemId}",
 		method = RequestMethod.GET,
 		produces = MediaType.APPLICATION_JSON_VALUE)
-	public ProductBoundary retrieveProduct(@PathVariable("userSpace") String userSpace,
+	public ItemBoundary retrieveProduct(@PathVariable("userSpace") String userSpace,
 			@PathVariable("userEmail") String userEmail,
 			@PathVariable("itemSpace") String itemSpace,
 			@PathVariable("itemId") String itemId) {
@@ -28,7 +28,7 @@ public class ItemController {
 		ItemId id = new ItemId(itemSpace, itemId);
 		CreatedBy createdBy = new CreatedBy(new UserId(userSpace, userEmail));
 		
-		ProductBoundary rv = new ProductBoundary(id, "product type", "product name", createdBy);
+		ItemBoundary rv = new ItemBoundary(id, "product type", "product name", createdBy);
 		
 		rv.getItemAttributes().put("type", eTypes.MEAL.name());
 		rv.getItemAttributes().put("price", 53.5);

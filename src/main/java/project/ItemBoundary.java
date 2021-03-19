@@ -4,7 +4,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ProductBoundary {
+public class ItemBoundary {
 	
 	private ItemId itemId;
 	private String type;
@@ -16,7 +16,7 @@ public class ProductBoundary {
 	private Map<String, Object> itemAttributes;
 	
 	
-	public ProductBoundary() {
+	public ItemBoundary() {
 		this.active = true;
 		this.itemAttributes = new HashMap<>();
 		this.createdTimestamp = new Date();
@@ -24,7 +24,7 @@ public class ProductBoundary {
 	}
 
 
-	public ProductBoundary(ItemId itemId, String type, String name, CreatedBy createdBy) {
+	public ItemBoundary(ItemId itemId, String type, String name, CreatedBy createdBy) {
 		this();
 		this.itemId = itemId;
 		this.type = type;
