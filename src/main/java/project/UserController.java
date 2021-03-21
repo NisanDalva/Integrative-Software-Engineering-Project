@@ -1,7 +1,5 @@
 package project;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl;
-
 import java.util.ArrayList;
 
 import org.springframework.http.MediaType;
