@@ -65,26 +65,24 @@ public class ItemController {
 			@PathVariable("userEmail") String userEmail) {
 		
 		// STUB implementation
+		input.setItemId(new ItemId("demo_space_item", "demo_id"));
 		return input;
 	}
 	
 	
 	@RequestMapping(
-			path="/twins/users/{userSpace}/{userEmail}/{itemSpace}/{itemId}",
+			path="/twins/items/{userSpace}/{userEmail}/{itemSpace}/{itemId}",
 			method = RequestMethod.PUT,
 			consumes = MediaType.APPLICATION_JSON_VALUE)
 	public void UpdateItem(@RequestBody UserBoundary update,
 			@PathVariable("userSpace") String userSpace,
-			@PathVariable("userEmail") String userEmail) {
+			@PathVariable("userEmail") String userEmail,
+			@PathVariable("itemSpace") String itemSpace,
+			@PathVariable("itemId") String itemId) {
 		
 		// STUB implementation
+		System.err.println("updated successfully");
 	}
 	
 	
 }
-
-
-
-
-
-

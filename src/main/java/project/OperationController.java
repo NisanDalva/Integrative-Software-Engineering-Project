@@ -12,7 +12,7 @@ public class OperationController {
 	
 	public OperationController() {
 	}
-		
+	
 	@RequestMapping(
 			path = "/twins/operations",
 			method = RequestMethod.POST,
