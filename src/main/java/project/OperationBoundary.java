@@ -1,6 +1,7 @@
 package project;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 public class OperationBoundary {
@@ -12,17 +13,16 @@ public class OperationBoundary {
 	private Map<String, Object> operationAttributes;
 
 	public OperationBoundary() {
+		this.createdTimestamp = new Date();
+		this.operationAttributes = new HashMap<>();
 	}
 	
-	public OperationBoundary(OperationId operationId, String type, Item item, Date createdTimestamp, InvokedBy invokedBy,
-			Map<String, Object> operationAttributes) {
-		super();
+	public OperationBoundary(OperationId operationId, String type, Item item, InvokedBy invokedBy) {
+		this();
 		this.operationId = operationId;
 		this.type = type;
 		this.item = item;
-		this.createdTimestamp = createdTimestamp;
 		this.invokedBy = invokedBy;
-		this.operationAttributes = operationAttributes;
 	}
 
 	public OperationId getOperationId() {
