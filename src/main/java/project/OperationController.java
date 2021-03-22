@@ -1,42 +1,37 @@
-//package project;
-//
-//import org.springframework.http.MediaType;
-//import org.springframework.web.bind.annotation.PathVariable;
-//import org.springframework.web.bind.annotation.RequestMapping;
-//import org.springframework.web.bind.annotation.RequestMethod;
-//import org.springframework.web.bind.annotation.RestController;
-//
-//import project.ItemController.eTypes;
-//
-//@RestController
-//public class OperationController {
-//	
-//	public OperationController() {
-//	}
-//	
-//	@RequestMapping(
-//		path = "/twins/items/{userSpace}/{userEmail}/{itemSpace}/{itemId}",
-//		method = RequestMethod.GET,
-//		produces = MediaType.APPLICATION_JSON_VALUE)
-//	public OperationBoundary retrieveProduct(@PathVariable("userSpace") String userSpace,
-//			@PathVariable("userEmail") String userEmail,
-//			@PathVariable("itemSpace") String itemSpace,
-//			@PathVariable("itemId") String itemId) {
-//		
-//		// STUB implementation
-//		ItemId id = new ItemId(itemSpace, itemId);
-//		CreatedBy createdBy = new CreatedBy(new UserId(userSpace, userEmail));
-//		
-//		ItemBoundary rv = new ItemBoundary(id, "product type", "product name", createdBy);
-//		
-//		rv.getItemAttributes().put("type", eTypes.MEAL.name());
-//		rv.getItemAttributes().put("price", 53.5);
-//		rv.getItemAttributes().put("ingredients", new String[] {"rice", "meat", "tomato", "onion"});
-//		rv.getItemAttributes().put("rank", 5);
-//		
-//		System.err.println(rv);
-//		
-//		OperationBoundary r = new OperationBoundary();
-//		return r;
-//	}
-//}
+package project;
+
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+
+@RestController
+public class OperationController {
+	
+	public OperationController() {
+	}
+		
+	@RequestMapping(
+			path = "/twins/operations",
+			method = RequestMethod.POST,
+			produces = MediaType.APPLICATION_JSON_VALUE,
+			consumes = MediaType.APPLICATION_JSON_VALUE)
+	public Object invokeOperation (@RequestBody OperationBoundary input) {
+		//STUB implementation
+		input.setOperationId(new OperationId("demo_space", "demo_id"));
+		return input;
+	}
+	
+	@RequestMapping(
+			path = "/twins/operations/async",
+			method = RequestMethod.POST,
+			produces = MediaType.APPLICATION_JSON_VALUE,
+			consumes = MediaType.APPLICATION_JSON_VALUE)
+	public OperationBoundary asyncOperation (@RequestBody OperationBoundary input) {
+		//STUB implementation
+		input.setOperationId(new OperationId("demo_space", "demo_id"));
+		return input;
+	}
+}

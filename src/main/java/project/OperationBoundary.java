@@ -6,16 +6,15 @@ import java.util.Map;
 public class OperationBoundary {
 	private OperationId operationId;
 	private String type;
-	private ItemId item;
+	private Item item;
 	private Date createdTimestamp;
-	private UserId invokedBy;
+	private InvokedBy invokedBy;
 	private Map<String, Object> operationAttributes;
 
 	public OperationBoundary() {
-		
 	}
 	
-	public OperationBoundary(OperationId operationId, String type, ItemId item, Date createdTimestamp, UserId invokedBy,
+	public OperationBoundary(OperationId operationId, String type, Item item, Date createdTimestamp, InvokedBy invokedBy,
 			Map<String, Object> operationAttributes) {
 		super();
 		this.operationId = operationId;
@@ -42,11 +41,11 @@ public class OperationBoundary {
 		this.type = type;
 	}
 
-	public ItemId getItem() {
+	public Item getItem() {
 		return item;
 	}
 
-	public void setItem(ItemId item) {
+	public void setItem(Item item) {
 		this.item = item;
 	}
 
@@ -58,11 +57,11 @@ public class OperationBoundary {
 		this.createdTimestamp = createdTimestamp;
 	}
 
-	public UserId getInvokedBy() {
+	public InvokedBy getInvokedBy() {
 		return invokedBy;
 	}
 
-	public void setInvokedBy(UserId invokedBy) {
+	public void setInvokedBy(InvokedBy invokedBy) {
 		this.invokedBy = invokedBy;
 	}
 
