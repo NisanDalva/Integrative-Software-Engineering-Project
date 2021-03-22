@@ -1,6 +1,5 @@
 package project;
 
-import java.util.ArrayList;
 
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,36 +11,35 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class UserController {
-	ArrayList<UserBoundary> users=new ArrayList<>();
 	@RequestMapping(
-			path = "/twins/users/login/{userSpace}/{userEmail}",
+			path = "/twins/users",
 			method = RequestMethod.POST,
 			produces = MediaType.APPLICATION_JSON_VALUE,
 			consumes = MediaType.APPLICATION_JSON_VALUE)
-	public UserBoundary CreateNewUser(@RequestBody NewUserDetails input,@PathVariable("userSpace") String userSpace,@PathVariable("userEmail") String userEmail) {
-		UserBoundary user=new UserBoundary(input.getRole(),input.getUsername(),input.getAvatar(),userSpace,userEmail);
-		//users.add(user);
-		
+	public UserBoundary CreateNewUser(@RequestBody NewUserDetails input) {
+		UserBoundary user = new UserBoundary(new UserId("demo_userSpace","demo_userEmail"), input.getRole(), input.getUsername(), input.getAvatar());
 		return user;
-		
-		
 	}
 	
 	@RequestMapping(
 			path = "/twins/users/login/{userSpace}/{userEmail}",
 			method = RequestMethod.GET,
 			produces = MediaType.APPLICATION_JSON_VALUE)
-	public UserBoundary LoginAndRetrieve(@PathVariable("userSpace") String userSpace,@PathVariable("userEmail") String userEmail) {
-		UserBoundary user=new UserBoundary("manager","dolev","12345",userSpace,userEmail);///////need to improve!!!
-		return user;
+	public UserBoundary LoginAndRetrieve(@PathVariable("userSpace") String userSpace,
+			@PathVariable("userEmail") String userEmail) {
 		
+		UserBoundary user = new UserBoundary(new UserId(userSpace,userEmail), "manager", "dolev", "12345");
+		return user;
 	}
 	
 	@RequestMapping(
 			path="/twins/users/{userSpace}/{userEmail}",
 			method = RequestMethod.PUT,
 			consumes = MediaType.APPLICATION_JSON_VALUE)
-	public void UpdateUser(@PathVariable("userSpace") String userSpace,@PathVariable("userEmail") String userEmail,@RequestBody UserBoundary update) {
+	public void UpdateUser(@PathVariable("userSpace") String userSpace,
+			@PathVariable("userEmail") String userEmail,
+			@RequestBody UserBoundary update) {
 		
+		System.err.println("updated successfully");
 	}
 }

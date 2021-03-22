@@ -1,28 +1,22 @@
 package project;
 
 public class UserBoundary {
-	String role;
-	String username;
-	String avatar;
-	UserId userid;
+	private UserId userid;
+	private String role;
+	private String username;
+	private String avatar;
 	
 	
 	public UserBoundary() {
-		
-		// TODO Auto-generated constructor stub
 	}
 	
-	
 
-
-
-
-	public UserBoundary(String role, String username, String avatar, String space,String email) {
+	public UserBoundary(UserId userid, String role, String username, String avatar) {
 		super();
+		this.userid = userid;
 		this.role = role;
 		this.username = username;
 		this.avatar = avatar;
-		this.userid = new UserId(space,email);
 	}
 
 
@@ -51,5 +45,11 @@ public class UserBoundary {
 		this.avatar = avatar;
 	}
 
+
+	@Override
+	public String toString() {
+		return "UserBoundary [userid=" + userid + ", role=" + role + ", username=" + username + ", avatar=" + avatar
+				+ "]";
+	}
 
 }

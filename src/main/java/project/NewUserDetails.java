@@ -1,13 +1,12 @@
 package project;
 
 public class NewUserDetails {
-	String email;
-	String role;
-	String username;
-	String avatar;
+	private String email;
+	private String role;
+	private String username;
+	private String avatar;
 	
 	public NewUserDetails() {
-		// TODO Auto-generated constructor stub
 	}
 	
 	public NewUserDetails(String email, String role, String username, String avatar) {
@@ -41,6 +40,12 @@ public class NewUserDetails {
 	}
 	public void setAvatar(String avatar) {
 		this.avatar = avatar;
+	}
+
+	@Override
+	public String toString() {
+		return "NewUserDetails [email=" + email + ", role=" + role + ", username=" + username + ", avatar=" + avatar
+				+ "]";
 	}
 
 }
