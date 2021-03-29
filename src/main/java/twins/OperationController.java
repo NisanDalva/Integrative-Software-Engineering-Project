@@ -1,4 +1,4 @@
-package project;
+package twins;
 
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestBody;

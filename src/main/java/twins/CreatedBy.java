@@ -1,4 +1,4 @@
-package project;
+package twins;
 
 public class CreatedBy {
 	private UserId userId;

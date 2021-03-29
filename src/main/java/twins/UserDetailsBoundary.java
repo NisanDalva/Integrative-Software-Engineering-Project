@@ -1,4 +1,4 @@
-package project;
+package twins;
 
 //{
 //	"first":"Jane",

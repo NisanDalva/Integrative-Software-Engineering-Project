@@ -1,4 +1,4 @@
-package project;
+package twins;
 
 public class Location {
 	private Double lat;

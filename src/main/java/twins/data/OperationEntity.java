@@ -1,10 +1,21 @@
-package project;
+package twins.data;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-public class OperationBoundary {
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import twins.InvokedBy;
+import twins.Item;
+import twins.OperationId;
+
+@Entity
+@Table(name="OPERATIONS")
+public class OperationEntity {
 	private OperationId operationId;
 	private String type;
 	private Item item;
@@ -12,27 +23,30 @@ public class OperationBoundary {
 	private InvokedBy invokedBy;
 	private Map<String, Object> operationAttributes;
 
-	public OperationBoundary() {
+	public OperationEntity() {
 		this.createdTimestamp = new Date();
 		this.operationAttributes = new HashMap<>();
 	}
 	
-	public OperationBoundary(OperationId operationId, String type, Item item, InvokedBy invokedBy) {
+	public OperationEntity(OperationId operationId, String type, Item item, InvokedBy invokedBy) {
 		this();
 		this.operationId = operationId;
 		this.type = type;
 		this.item = item;
 		this.invokedBy = invokedBy;
 	}
-
+	
+	@Transient
 	public OperationId getOperationId() {
 		return operationId;
 	}
-
+	
+	@Transient
 	public void setOperationId(OperationId operationId) {
 		this.operationId = operationId;
 	}
-
+	
+	@Id
 	public String getType() {
 		return type;
 	}
@@ -40,44 +54,44 @@ public class OperationBoundary {
 	public void setType(String type) {
 		this.type = type;
 	}
-
+	
+	@Transient
 	public Item getItem() {
 		return item;
 	}
-
+	@Transient
 	public void setItem(Item item) {
 		this.item = item;
 	}
-
+	
+	@Transient
 	public Date getCreatedTimestamp() {
 		return createdTimestamp;
 	}
 
+	@Transient
 	public void setCreatedTimestamp(Date createdTimestamp) {
 		this.createdTimestamp = createdTimestamp;
 	}
-
+	
+	@Transient
 	public InvokedBy getInvokedBy() {
 		return invokedBy;
 	}
-
+	
+	@Transient
 	public void setInvokedBy(InvokedBy invokedBy) {
 		this.invokedBy = invokedBy;
 	}
-
+	
+	@Transient
 	public Map<String, Object> getOperationAttributes() {
 		return operationAttributes;
 	}
-
+	
+	@Transient
 	public void setOperationAttributes(Map<String, Object> operationAttributes) {
 		this.operationAttributes = operationAttributes;
 	}
 
-	@Override
-	public String toString() {
-		return "OperationBoundary [operationId=" + operationId + ", type=" + type + ", item=" + item
-				+ ", createdTimestamp=" + createdTimestamp + ", invokedBy=" + invokedBy + ", operationAttributes="
-				+ operationAttributes + "]";
-	}
-	
 }
