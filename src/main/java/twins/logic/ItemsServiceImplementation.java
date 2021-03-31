@@ -1,6 +1,8 @@
 package twins.logic;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.hibernate.cache.spi.support.AbstractReadWriteAccess.Item;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import twins.ItemBoundary;
 import twins.data.ItemDao;
+import twins.data.ItemEntity;
 
 @Service
 public class ItemsServiceImplementation implements ItemsService {
@@ -18,7 +21,7 @@ public class ItemsServiceImplementation implements ItemsService {
 		super();
 		this.itemDao = itemDao;
 	}
-
+	
 	@Override
 	public ItemBoundary createItem(String userSpace, String userEmail, Item itemBoundary) {
 		// TODO Auto-generated method stub
@@ -32,22 +35,49 @@ public class ItemsServiceImplementation implements ItemsService {
 		return null;
 	}
 
+	// TODO make sure race conditions are handled
 	@Override
 	public List<ItemBoundary> getAllItems(String userSpace, String userEmail) {
-		// TODO Auto-generated method stub
-		return null;
+		Iterable<ItemEntity> allEntities = this.itemDao.findAll();
+		List<ItemBoundary> rv = new ArrayList<>();
+		for (ItemEntity entity : allEntities) {
+			// TODO create a generic converter from entity to boundary
+			ItemBoundary boundary = new ItemBoundary();
+			
+			boundary.setItemId(entity.getItemId());
+			boundary.setType(entity.getType());
+			boundary.setName(entity.getName());
+			boundary.setActive(entity.getActive());
+			boundary.setCreatedTimestamp(entity.getCreatedTimestamp());
+			boundary.setLocation(entity.getLocation());
+			boundary.setItemAttributes(entity.getItemAttributes());
+			boundary.setCreatedBy(entity.getCreatedBy());
+			
+			rv.add(boundary);
+		}		
+		return rv;
 	}
 
 	@Override
 	public ItemBoundary getSpecificItem(String userSpace, String userEmail, String itemSpace, String itemId) {
-		// TODO Auto-generated method stub
-		return null;
+		//Optional<ItemEntity> entity = this.itemDao.findById(itemId); //check how to get specific item. 
+		ItemEntity entity = new ItemEntity();
+		ItemBoundary boundary = new ItemBoundary();
+		boundary.setItemId(entity.getItemId());
+		boundary.setType(entity.getType());
+		boundary.setName(entity.getName());
+		boundary.setActive(entity.getActive());
+		boundary.setCreatedTimestamp(entity.getCreatedTimestamp());
+		boundary.setLocation(entity.getLocation());
+		boundary.setItemAttributes(entity.getItemAttributes());
+		boundary.setCreatedBy(entity.getCreatedBy());
+		return boundary;
 	}
 
+	
 	@Override
 	public void deleteAllItems(String adminSpace, String adminEmail) {
-		// TODO Auto-generated method stub
-		
+		itemDao.deleteAll();
 	}
 
 }
