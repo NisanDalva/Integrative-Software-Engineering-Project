@@ -3,7 +3,8 @@ package twins.logic;
 import java.util.List;
 
 import org.hibernate.cache.spi.support.AbstractReadWriteAccess.Item;
-import twins.ItemBoundary;
+
+import twins.boundaries.ItemBoundary;
 
 public interface ItemsService {
 	public ItemBoundary createItem(String userSpace, String userEmail, Item itemBoundary);

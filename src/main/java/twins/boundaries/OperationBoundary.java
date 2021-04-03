@@ -1,8 +1,12 @@
-package twins;
+package twins.boundaries;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import twins.InvokedBy;
+import twins.Item;
+import twins.OperationId;
 
 public class OperationBoundary {
 	private OperationId operationId;

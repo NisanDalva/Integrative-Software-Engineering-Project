@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import twins.OperationBoundary;
 import twins.OperationId;
+import twins.boundaries.OperationBoundary;
 
 
 @RestController

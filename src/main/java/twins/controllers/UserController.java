@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import twins.NewUserDetails;
-import twins.UserBoundary;
 import twins.UserId;
+import twins.boundaries.UserBoundary;
 
 
 @RestController

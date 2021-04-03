@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.RestController;
 import twins.InvokedBy;
 import twins.Item;
 import twins.ItemId;
-import twins.OperationBoundary;
 import twins.OperationId;
-import twins.UserBoundary;
 import twins.UserId;
+import twins.boundaries.OperationBoundary;
+import twins.boundaries.UserBoundary;
 
 @RestController
 public class AdminController {

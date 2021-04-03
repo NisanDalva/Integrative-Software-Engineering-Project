@@ -1,4 +1,6 @@
-package twins;
+package twins.boundaries;
+
+import twins.UserId;
 
 public class UserBoundary {
 	private UserId userid;

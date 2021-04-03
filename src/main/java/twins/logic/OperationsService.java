@@ -2,7 +2,7 @@ package twins.logic;
 
 import java.util.List;
 
-import twins.OperationBoundary;
+import twins.boundaries.OperationBoundary;
 
 public interface OperationsService {
 	public Object invokeOperation(OperationBoundary operation);

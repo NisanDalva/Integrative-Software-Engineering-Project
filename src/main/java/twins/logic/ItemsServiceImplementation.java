@@ -8,7 +8,7 @@ import org.hibernate.cache.spi.support.AbstractReadWriteAccess.Item;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import twins.ItemBoundary;
+import twins.boundaries.ItemBoundary;
 import twins.data.ItemDao;
 import twins.data.ItemEntity;
 

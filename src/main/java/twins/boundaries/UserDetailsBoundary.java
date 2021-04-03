@@ -1,4 +1,4 @@
-package twins;
+package twins.boundaries;
 
 //{
 //	"first":"Jane",

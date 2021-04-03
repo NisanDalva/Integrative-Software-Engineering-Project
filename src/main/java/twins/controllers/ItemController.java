@@ -9,10 +9,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import twins.CreatedBy;
-import twins.ItemBoundary;
 import twins.ItemId;
-import twins.UserBoundary;
 import twins.UserId;
+import twins.boundaries.ItemBoundary;
+import twins.boundaries.UserBoundary;
 
 @RestController
 public class ItemController {

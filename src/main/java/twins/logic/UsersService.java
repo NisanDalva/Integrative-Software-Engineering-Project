@@ -2,7 +2,7 @@ package twins.logic;
 
 import java.util.List;
 
-import twins.UserBoundary;
+import twins.boundaries.UserBoundary;
 
 public interface UsersService {
 	public UserBoundary createUser(UserBoundary user);
