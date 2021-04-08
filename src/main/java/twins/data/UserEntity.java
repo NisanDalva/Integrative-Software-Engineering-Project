@@ -8,7 +8,8 @@ import twins.UserId;
 @Entity
 @Table(name="USERS")
 public class UserEntity {
-	private UserId userid;
+	private String space;
+	private String email;
 	private String role;
 	private String username;
 	private String avatar;
@@ -20,20 +21,27 @@ public class UserEntity {
 
 	public UserEntity(UserId userid, String role, String username, String avatar) {
 		super();
-		this.userid = userid;
+		this.space = userid.getSpace();
+		this.email=userid.getEmail();
 		this.role = role;
 		this.username = username;
 		this.avatar = avatar;
 	}
-
-	@Transient
-	public UserId getUserid() {
-		return userid;
+	
+	public String getEmail() {
+		return email;
+	}
+	@Id
+	public void setEmail(String email) {
+		this.email = email;
 	}
 	
-	@Transient
-	public void setUserid(UserId userid) {
-		this.userid = userid;
+	public String getSpace() {
+		return space;
+	}
+	@Id
+	public void setSpace(String space) {
+		this.space = space;
 	}
 	
 	public String getRole() {
@@ -44,7 +52,7 @@ public class UserEntity {
 		this.role = role;
 	}
 	
-	@Id
+	//@Id
 	public String getUsername() {
 		return username;
 	}
