@@ -3,6 +3,7 @@ package twins.data;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -16,11 +17,15 @@ import twins.OperationId;
 @Entity
 @Table(name="OPERATIONS")
 public class OperationEntity {
-	private OperationId operationId;
+
+//	private String space;
+	private String id;
 	private String type;
 	private Item item;
 	private Date createdTimestamp;
-	private InvokedBy invokedBy;
+	//private InvokedBy invokedBy;
+	private String space;
+	private String email;
 	private Map<String, Object> operationAttributes;
 
 	public OperationEntity() {
@@ -28,25 +33,32 @@ public class OperationEntity {
 		this.operationAttributes = new HashMap<>();
 	}
 	
+
 	public OperationEntity(OperationId operationId, String type, Item item, InvokedBy invokedBy) {
 		this();
-		this.operationId = operationId;
+		this.space = operationId.getSpace();
+		this.id=operationId.getId();
 		this.type = type;
 		this.item = item;
-		this.invokedBy = invokedBy;
-	}
-	
-	@Transient
-	public OperationId getOperationId() {
-		return operationId;
-	}
-	
-	@Transient
-	public void setOperationId(OperationId operationId) {
-		this.operationId = operationId;
+	//	this.invokedBy = invokedBy;
 	}
 	
 	@Id
+	public String getId() {
+		return id;
+	}
+	public void setId(String id) {
+		this.id = id;
+	}
+	
+	@Id
+	public String getSpace() {
+		return space;
+	}
+	public void setSpace(String space) {
+		this.space = space;
+	}
+	
 	public String getType() {
 		return type;
 	}
@@ -74,15 +86,15 @@ public class OperationEntity {
 		this.createdTimestamp = createdTimestamp;
 	}
 	
-	@Transient
-	public InvokedBy getInvokedBy() {
-		return invokedBy;
-	}
+	//@Transient
+	//public InvokedBy getInvokedBy() {
+	////	return invokedBy;
+	//}
 	
-	@Transient
-	public void setInvokedBy(InvokedBy invokedBy) {
-		this.invokedBy = invokedBy;
-	}
+	//@Transient
+	//public void setInvokedBy(InvokedBy invokedBy) {
+	//	this.invokedBy = invokedBy;
+	//}
 	
 	@Transient
 	public Map<String, Object> getOperationAttributes() {

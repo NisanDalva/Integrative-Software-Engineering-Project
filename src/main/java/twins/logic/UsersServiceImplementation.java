@@ -71,13 +71,20 @@ public class UsersServiceImplementation implements UsersService {
 	    java.util.regex.Pattern p = java.util.regex.Pattern.compile(ePattern);
 	    java.util.regex.Matcher m = p.matcher(email);
 	    return m.matches();
-			}
+	}
 	
 
 	@Override
+	@Transactional(readOnly = true)
 	public UserBoundary login(String userSpace, String userEmail) {
-		// TODO Auto-generated method stub
-		return null;
+		Optional<UserEntity> op = this.userDao.findById(userEmail); //check, we need two id!!!!
+		if (op.isPresent()) {
+			UserEntity existing = op.get();
+			UserBoundary user= convertToBoundary(existing);
+			return user;}
+		else {
+			throw new RuntimeException(); // TODO: return status = 404 instead of status = 500 
+		}
 	}
 
 	@Override
@@ -107,21 +114,30 @@ public class UsersServiceImplementation implements UsersService {
 	@Override
 	@Transactional(readOnly = true)
 	public List<UserBoundary> getAllUsers(String adminSpace, String adminEmail) { //check what to do with the parameters !!!!!
-
-		Iterable<UserEntity> allUsersEntities = this.userDao.findAll();
-		List<UserBoundary> usersBoundaryList = new ArrayList<>();
-		for (UserEntity entity : allUsersEntities) {
-			UserBoundary boundary = convertToBoundary(entity);
-			usersBoundaryList.add(boundary);
+		UserBoundary checkAdmin=login(adminSpace,adminEmail);
+		if(checkAdmin.getRole()=="ADMIN") {
+			Iterable<UserEntity> allUsersEntities = this.userDao.findAll();
+			List<UserBoundary> usersBoundaryList = new ArrayList<>();
+			for (UserEntity entity : allUsersEntities) {
+				UserBoundary boundary = convertToBoundary(entity);
+				usersBoundaryList.add(boundary);
+			}
+			return usersBoundaryList;
 		}
-		
-		return usersBoundaryList;
+		else {
+			throw new RuntimeException(); // TODO: return status = 404 instead of status = 500 
+		}
 	}
 
 	@Override
-	public void deleteAllUsers(String adminSpace, String adminEmail) {
-		// TODO Auto-generated method stub
-		
+	@Transactional//(readOnly = false)
+	public void deleteAllUsers(String adminSpace, String adminEmail) {//check what to do with the parameters !!!!!
+		UserBoundary checkAdmin=login(adminSpace,adminEmail);
+		if(checkAdmin.getRole()=="ADMIN")
+			this.userDao.deleteAll();	
+		else {
+			throw new RuntimeException(); // TODO: return status = 404 instead of status = 500 
+		}
 	}
 
 }
