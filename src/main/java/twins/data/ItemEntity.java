@@ -1,54 +1,74 @@
 package twins.data;
 
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
-import twins.CreatedBy;
-import twins.ItemId;
-import twins.Location;
 @Entity
 @Table(name="ITEMS")
 public class ItemEntity {
-	private ItemId itemId;
+	//itemId
+	private String itemSpace;
+	private String id;
+	
 	private String type;
 	private String name;
 	private Boolean active;
 	private Date createdTimestamp;
-	private CreatedBy createdBy;
-	private Location location;
-	private Map<String, Object> itemAttributes;
+	//createdBy
+	private String userSpace;
+	private String email;
+	//Location
+	private Double lat;
+	private Double lng;
+	
+	private String itemAttributes;
 	
 	
 	public ItemEntity() {
 		this.active = true;
-		this.itemAttributes = new HashMap<>();
+		this.itemAttributes = null;
 		this.createdTimestamp = new Date();
-		this.location = null;
+		this.lat = null;
+		this.lng = null;
 	}
-
-
-	public ItemEntity(ItemId itemId, String type, String name, CreatedBy createdBy) {
+	
+	public ItemEntity(String itemSpace, String id, String type, String name, Boolean active, Date createdTimestamp,
+			String userSpace, String email, Double lat, Double lng, String itemAttributes) {
 		this();
-		this.itemId = itemId;
+		this.itemSpace = itemSpace;
+		this.id = id;
 		this.type = type;
 		this.name = name;
-		this.createdBy = createdBy;
+		this.active = active;
+		this.createdTimestamp = createdTimestamp;
+		this.userSpace = userSpace;
+		this.email = email;
+		this.lat = lat;
+		this.lng = lng;
+		this.itemAttributes = itemAttributes;
 	}
-	
-	@Transient
-	public ItemId getItemId() {
-		return itemId;
+
+	public String getItemSpace() {
+		return itemSpace;
 	}
-	
-	@Transient
-	public void setItemId(ItemId itemId) {
-		this.itemId = itemId;
+
+	public void setItemSpace(String itemSpace) {
+		this.itemSpace = itemSpace;
+	}
+
+	@Id
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
 	}
 
 	public String getType() {
@@ -59,7 +79,6 @@ public class ItemEntity {
 		this.type = type;
 	}
 
-	@Id
 	public String getName() {
 		return name;
 	}
@@ -67,55 +86,64 @@ public class ItemEntity {
 	public void setName(String name) {
 		this.name = name;
 	}
-	
-	@Transient
+
 	public Boolean getActive() {
 		return active;
 	}
-	
-	@Transient
+
 	public void setActive(Boolean active) {
 		this.active = active;
 	}
 
-	@Transient
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="MESSAGE_CREATION")
 	public Date getCreatedTimestamp() {
 		return createdTimestamp;
 	}
 
-	@Transient
 	public void setCreatedTimestamp(Date createdTimestamp) {
 		this.createdTimestamp = createdTimestamp;
 	}
 
-	@Transient
-	public Location getLocation() {
-		return location;
+	public String getUserSpace() {
+		return userSpace;
 	}
 
-	@Transient
-	public void setLocation(Location location) {
-		this.location = location;
+	public void setUserSpace(String userSpace) {
+		this.userSpace = userSpace;
 	}
 
-	@Transient
-	public Map<String, Object> getItemAttributes() {
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public Double getLat() {
+		return lat;
+	}
+
+	public void setLat(Double lat) {
+		this.lat = lat;
+	}
+
+	public Double getLng() {
+		return lng;
+	}
+
+	public void setLng(Double lng) {
+		this.lng = lng;
+	}
+
+	@Lob
+	public String getItemAttributes() {
 		return itemAttributes;
 	}
 
-	@Transient
-	public void setItemAttributes(Map<String, Object> itemAttributes) {
+	public void setItemAttributes(String itemAttributes) {
 		this.itemAttributes = itemAttributes;
-	}
-
-	@Transient
-	public CreatedBy getCreatedBy() {
-		return createdBy;
-	}
-
-	@Transient
-	public void setCreatedBy(CreatedBy createdBy) {
-		this.createdBy = createdBy;
 	}
 	
 }

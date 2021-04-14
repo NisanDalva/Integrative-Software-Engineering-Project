@@ -1,6 +1,7 @@
 package twins.controllers;
 
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,13 +14,17 @@ import twins.ItemId;
 import twins.UserId;
 import twins.boundaries.ItemBoundary;
 import twins.boundaries.UserBoundary;
+import twins.logic.ItemsServiceImplementation;
 
 @RestController
 public class ItemController {
 	
 	public enum eTypes {MEAL, DRINK, SOUCE};
+	private ItemsServiceImplementation ItemsServiceImplementation;
 	
-	public ItemController() {
+	@Autowired
+	public ItemController(ItemsServiceImplementation ItemsServiceImplementation) {
+		this.ItemsServiceImplementation = ItemsServiceImplementation;
 	}
 	
 	@RequestMapping(
@@ -71,7 +76,10 @@ public class ItemController {
 			@PathVariable("userEmail") String userEmail) {
 		
 		// STUB implementation
-		input.setItemId(new ItemId("demo_space_item", "demo_id"));
+//		input.setItemId(new ItemId("demo_space_item", "demo_id"));
+		
+		ItemsServiceImplementation.createItem(userSpace, userEmail, input);
+		
 		return input;
 	}
 	

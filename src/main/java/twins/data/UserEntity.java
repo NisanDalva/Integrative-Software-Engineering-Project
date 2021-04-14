@@ -31,7 +31,7 @@ public class UserEntity {
 	public String getEmail() {
 		return email;
 	}
-	@Id
+//	@Id
 	public void setEmail(String email) {
 		this.email = email;
 	}
@@ -39,7 +39,7 @@ public class UserEntity {
 	public String getSpace() {
 		return space;
 	}
-	@Id
+//	@Id
 	public void setSpace(String space) {
 		this.space = space;
 	}
@@ -52,7 +52,7 @@ public class UserEntity {
 		this.role = role;
 	}
 	
-	//@Id
+	@Id
 	public String getUsername() {
 		return username;
 	}
