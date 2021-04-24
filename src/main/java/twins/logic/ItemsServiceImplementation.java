@@ -57,7 +57,38 @@ public class ItemsServiceImplementation implements ItemsService {
 	@Transactional
 	public ItemBoundary updateItem(String userSpace, String userEmail, String itemSpace, String itemId,
 			ItemBoundary update) {
-		// TODO Auto-generated method stub
+		
+		ItemEntity existing = new ItemEntity();
+		
+		
+		
+		Optional<ItemEntity> op = this.itemDao.findById(itemId);
+		if (op.isPresent()) {
+			existing = op.get();
+			
+			ItemEntity updatedEntity = this.boundaryToEntity(update);
+			
+			updatedEntity.setCreatedTimestamp(existing.getCreatedTimestamp());
+			updatedEntity.setId(existing.getId());
+			updatedEntity.setItemSpace(existing.getItemSpace());
+			
+			
+		}
+//			
+//			if (op.isPresent()) {
+//				MessageEntity existing = op.get();
+//				
+//				MessageEntity updatedEntity = this.convertFromBoundary(update);
+//				
+//				updatedEntity.setId(id);
+//				updatedEntity.setMessageTimestamp(existing.getMessageTimestamp());
+//				updatedEntity.setHelper(existing.getHelper());
+//				
+//				this.messageDao
+//					.save(updatedEntity);
+//			}else {
+//				throw new RuntimeException(); // TODO: return status = 404 instead of status = 500 
+//			}
 		return null;
 	}
 
