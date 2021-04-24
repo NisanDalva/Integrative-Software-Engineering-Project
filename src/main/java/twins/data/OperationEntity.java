@@ -1,64 +1,65 @@
 package twins.data;
 
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
-import twins.InvokedBy;
-import twins.Item;
-import twins.OperationId;
 
 @Entity
 @Table(name="OPERATIONS")
 public class OperationEntity {
 
-//	private String space;
 	private String id;
+	private String operationSpace;
 	private String type;
-	private Item item;
+	private String itemSpace;
+	private String itemId;
 	private Date createdTimestamp;
-	//private InvokedBy invokedBy;
-	private String space;
+	private String userSpace;
 	private String email;
-	private Map<String, Object> operationAttributes;
+	private String operationAttributes;
 
 	public OperationEntity() {
 		this.createdTimestamp = new Date();
-		this.operationAttributes = new HashMap<>();
+		this.operationAttributes = null;
 	}
-	
 
-	public OperationEntity(OperationId operationId, String type, Item item, InvokedBy invokedBy) {
+	public OperationEntity(String id, String operationSpace, String type, String itemSpace, String itemId,
+			Date createdTimestamp, String userSpace, String email, String operationAttributes) {
 		this();
-		this.space = operationId.getSpace();
-		this.id=operationId.getId();
+		this.id = id;
+		this.operationSpace = operationSpace;
 		this.type = type;
-		this.item = item;
-	//	this.invokedBy = invokedBy;
+		this.itemSpace = itemSpace;
+		this.itemId = itemId;
+		this.createdTimestamp = createdTimestamp;
+		this.userSpace = userSpace;
+		this.email = email;
+		this.operationAttributes = operationAttributes;
 	}
 	
 	@Id
 	public String getId() {
 		return id;
 	}
+
 	public void setId(String id) {
 		this.id = id;
 	}
-	
-	@Id
-	public String getSpace() {
-		return space;
+
+	public String getOperationSpace() {
+		return operationSpace;
 	}
-	public void setSpace(String space) {
-		this.space = space;
+
+	public void setOperationSpace(String operationSpace) {
+		this.operationSpace = operationSpace;
 	}
-	
+
 	public String getType() {
 		return type;
 	}
@@ -66,44 +67,56 @@ public class OperationEntity {
 	public void setType(String type) {
 		this.type = type;
 	}
-	
-	@Transient
-	public Item getItem() {
-		return item;
+
+	public String getItemSpace() {
+		return itemSpace;
 	}
-	@Transient
-	public void setItem(Item item) {
-		this.item = item;
+
+	public void setItemSpace(String itemSpace) {
+		this.itemSpace = itemSpace;
+	}
+
+	public String getItemId() {
+		return itemId;
+	}
+
+	public void setItemId(String itemId) {
+		this.itemId = itemId;
 	}
 	
-	@Transient
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="OPERATION_CREATION")
 	public Date getCreatedTimestamp() {
 		return createdTimestamp;
 	}
 
-	@Transient
 	public void setCreatedTimestamp(Date createdTimestamp) {
 		this.createdTimestamp = createdTimestamp;
 	}
-	
-	//@Transient
-	//public InvokedBy getInvokedBy() {
-	////	return invokedBy;
-	//}
-	
-	//@Transient
-	//public void setInvokedBy(InvokedBy invokedBy) {
-	//	this.invokedBy = invokedBy;
-	//}
-	
-	@Transient
-	public Map<String, Object> getOperationAttributes() {
-		return operationAttributes;
-	}
-	
-	@Transient
-	public void setOperationAttributes(Map<String, Object> operationAttributes) {
-		this.operationAttributes = operationAttributes;
+
+	public String getUserSpace() {
+		return userSpace;
 	}
 
+	public void setUserSpace(String userSpace) {
+		this.userSpace = userSpace;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+	
+	@Lob
+	public String getOperationAttributes() {
+		return operationAttributes;
+	}
+
+	public void setOperationAttributes(String operationAttributes) {
+		this.operationAttributes = operationAttributes;
+	}
+	
 }
