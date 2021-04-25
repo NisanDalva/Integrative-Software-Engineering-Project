@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,11 +18,17 @@ import twins.data.UserRole;
 @Service
 public class UsersServiceImplementation implements UsersService {
 	private UserDao userDao;
+	private String springApplictionName;
 	
 	@Autowired
 	public UsersServiceImplementation(UserDao userDao) {
 		super();
 		this.userDao = userDao;
+	}
+	
+	@Value("${spring.application.name:DanielHay_space}")
+	public void setValue(String springApplictionName) {
+		this.springApplictionName = springApplictionName;
 	}
 	
 	@Override
@@ -43,20 +50,20 @@ public class UsersServiceImplementation implements UsersService {
 		boundary.setUsername(entity.getUsername());
 		boundary.setAvatar(entity.getAvatar());
 		boundary.setRole(entity.getRole());
-		UserId userid=new UserId(entity.getSpace(),entity.getEmail());
+		UserId userid=new UserId(this.springApplictionName,entity.getEmail());
 		boundary.setUserid(userid);
 		return boundary;
 	}
 
 	private UserEntity convertFromBoundary(UserBoundary user) {
 		UserEntity entity = new UserEntity();	
-		entity.setSpace(user.getUserid().getSpace());
+		//entity.setSpace(this.springApplictionName);
 		
 		if (UserRole.valueOf(user.getRole())!=null ) {/// check later what valueOf returns!!!!
 			entity.setRole(user.getRole());
 		}
 		if(isValidEmailAddress(user.getUserid().getEmail()))
-			entity.setEmail(user.getUserid().getEmail());
+			entity.setEmail(user.getUserid().getEmail()+"__"+this.springApplictionName);
 		if(user.getUsername()!=null)
 			entity.setUsername(user.getUsername());
 		if(user.getAvatar()!=null&&user.getAvatar()!="")
@@ -90,16 +97,15 @@ public class UsersServiceImplementation implements UsersService {
 	@Override
 	@Transactional
 	public UserBoundary updateUser(String userSpace, String userEmail, UserBoundary update) {
+		String email=userEmail+"__"+userSpace;
 		Optional<UserEntity> op = this.userDao
-				.findById(userEmail); //check, we need two id!!!!
+				.findById(email); 
 			
 			if (op.isPresent()) {
 				UserEntity existing = op.get();
 				
 				UserEntity updatedEntity = this.convertFromBoundary(update);
-				
-				updatedEntity.setSpace(existing.getSpace());
-		
+					
 				updatedEntity.setEmail(existing.getEmail());
 				
 				this.userDao.save(updatedEntity);

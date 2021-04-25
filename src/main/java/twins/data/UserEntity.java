@@ -27,22 +27,22 @@ public class UserEntity {
 		this.username = username;
 		this.avatar = avatar;
 	}
-	
+	@Id
 	public String getEmail() {
 		return email;
 	}
-//	@Id
+
 	public void setEmail(String email) {
 		this.email = email;
 	}
 	
-	public String getSpace() {
-		return space;
-	}
+	//public String getSpace() {
+	//	return space;
+	//}
 //	@Id
-	public void setSpace(String space) {
-		this.space = space;
-	}
+	//public void setSpace(String space) {
+	//	this.space = space;
+	//}
 	
 	public String getRole() {
 		return role;
