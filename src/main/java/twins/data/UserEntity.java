@@ -9,7 +9,7 @@ import twins.UserId;
 @Table(name="USERS")
 public class UserEntity {
 	private String space;
-	private String email;
+	private String email;//email__space
 	private String role;
 	private String username;
 	private String avatar;

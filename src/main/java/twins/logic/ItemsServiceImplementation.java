@@ -22,7 +22,7 @@ import twins.boundaries.ItemBoundary;
 import twins.data.ItemDao;
 import twins.data.ItemEntity;
 
-@SuppressWarnings("unused")
+//@SuppressWarnings("unused")
 @Service
 public class ItemsServiceImplementation implements ItemsService {
 	private ItemDao itemDao;
