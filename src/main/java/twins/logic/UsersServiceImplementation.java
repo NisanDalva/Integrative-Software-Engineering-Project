@@ -35,12 +35,6 @@ public class UsersServiceImplementation implements UsersService {
 	@Transactional
 	public UserBoundary createUser(UserBoundary user) {
 		UserEntity entity = this.convertFromBoundary(user);
-		//entity.setMessageTimestamp(new Date());
-		//entity.setId("" + this.atomicLong.getAndIncrement());
-		//entity.setHelper(value);
-		
-		
-		// store entity to database using INSERT query
 		entity = this.userDao.save(entity);
 		return this.convertToBoundary(entity);
 	}
@@ -59,15 +53,19 @@ public class UsersServiceImplementation implements UsersService {
 		UserEntity entity = new UserEntity();	
 		//entity.setSpace(this.springApplictionName);
 		
-		if (UserRole.valueOf(user.getRole())!=null ) {/// check later what valueOf returns!!!!
-			entity.setRole(user.getRole());
-		}
-		if(isValidEmailAddress(user.getUserid().getEmail()))
-			entity.setEmail(user.getUserid().getEmail()+"__"+this.springApplictionName);
-		if(user.getUsername()!=null)
-			entity.setUsername(user.getUsername());
+		if (UserRole.valueOf(user.getRole())==null ) /// check later what valueOf returns!!!!
+			throw new RuntimeException("invalid role");
+		if(!isValidEmailAddress(user.getUserid().getEmail()))
+			throw new RuntimeException("wrong eamil");
+		if(user.getUsername()==null)
+			throw new RuntimeException("User name cant be null!");
 		if(user.getAvatar()!=null&&user.getAvatar()!="")
-			entity.setAvatar(user.getAvatar());
+			throw new RuntimeException("invalid avatar");
+			
+		entity.setRole(user.getRole());
+		entity.setEmail(user.getUserid().getEmail()+"__"+this.springApplictionName);
+		entity.setUsername(user.getUsername());
+		entity.setAvatar(user.getAvatar());
 			
 			
 		return entity;	
@@ -84,7 +82,7 @@ public class UsersServiceImplementation implements UsersService {
 	@Override
 	@Transactional(readOnly = true)
 	public UserBoundary login(String userSpace, String userEmail) {
-		Optional<UserEntity> op = this.userDao.findById(userEmail); //check, we need two id!!!!
+		Optional<UserEntity> op = this.userDao.findById(userEmail+"__"+userSpace); 
 		if (op.isPresent()) {
 			UserEntity existing = op.get();
 			UserBoundary user= convertToBoundary(existing);
@@ -119,9 +117,7 @@ public class UsersServiceImplementation implements UsersService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<UserBoundary> getAllUsers(String adminSpace, String adminEmail) { //check what to do with the parameters !!!!!
-		UserBoundary checkAdmin=login(adminSpace,adminEmail);
-		if(checkAdmin.getRole()=="ADMIN") {
+	public List<UserBoundary> getAllUsers(String adminSpace, String adminEmail) {
 			Iterable<UserEntity> allUsersEntities = this.userDao.findAll();
 			List<UserBoundary> usersBoundaryList = new ArrayList<>();
 			for (UserEntity entity : allUsersEntities) {
@@ -130,20 +126,12 @@ public class UsersServiceImplementation implements UsersService {
 			}
 			return usersBoundaryList;
 		}
-		else {
-			throw new RuntimeException(); // TODO: return status = 404 instead of status = 500 
-		}
-	}
 
 	@Override
 	@Transactional//(readOnly = false)
-	public void deleteAllUsers(String adminSpace, String adminEmail) {//check what to do with the parameters !!!!!
-		UserBoundary checkAdmin=login(adminSpace,adminEmail);
-		if(checkAdmin.getRole()=="ADMIN")
+	public void deleteAllUsers(String adminSpace, String adminEmail) {
 			this.userDao.deleteAll();	
-		else {
-			throw new RuntimeException(); // TODO: return status = 404 instead of status = 500 
-		}
+	
 	}
 
 }

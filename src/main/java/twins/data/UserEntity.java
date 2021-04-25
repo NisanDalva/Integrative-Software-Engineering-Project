@@ -8,7 +8,7 @@ import twins.UserId;
 @Entity
 @Table(name="USERS")
 public class UserEntity {
-	private String space;
+	//private String space;
 	private String email;//email__space
 	private String role;
 	private String username;
@@ -21,7 +21,7 @@ public class UserEntity {
 
 	public UserEntity(UserId userid, String role, String username, String avatar) {
 		super();
-		this.space = userid.getSpace();
+		
 		this.email=userid.getEmail();
 		this.role = role;
 		this.username = username;
@@ -52,7 +52,7 @@ public class UserEntity {
 		this.role = role;
 	}
 	
-	@Id
+	//@Id
 	public String getUsername() {
 		return username;
 	}

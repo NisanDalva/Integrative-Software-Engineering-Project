@@ -75,13 +75,7 @@ public class OperationsServiceImplementation implements OperationsService {
 	@Override
 	@Transactional//(readOnly = false)
 	public void deleteAllOperations(String adminSpace, String adminEmail) {
-//		OperationBoundary checkAdmin=login(adminSpace,adminEmail);
-		//if(checkAdmin.getRole()=="ADMIN")
-			this.operationDao.deleteAll();	
-	//	else {
-		//	throw new RuntimeException(); // TODO: return status = 404 instead of status = 500 
-		//}
-		
+		this.operationDao.deleteAll();		
 	}
 	
 	private <T> T unmarshal(String json, Class<T> type) {
