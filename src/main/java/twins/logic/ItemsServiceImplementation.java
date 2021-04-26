@@ -7,14 +7,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import twins.CreatedBy;
-import twins.Item;
 import twins.ItemId;
 import twins.Location;
 import twins.UserId;
@@ -28,6 +29,7 @@ public class ItemsServiceImplementation implements ItemsService {
 	private ItemDao itemDao;
 	private ObjectMapper jackson;
 	private AtomicLong atomicLong; // TODO DO NOT RELY ON ATOMIC LONG IN PRODUCTION!!!!
+	private String space;
 
 	@Autowired
 	public ItemsServiceImplementation(ItemDao itemDao) {
@@ -36,6 +38,12 @@ public class ItemsServiceImplementation implements ItemsService {
 		this.jackson = new ObjectMapper();
 		this.atomicLong = new AtomicLong(1L);
 	}
+	
+	@Value("${spring.application.name}")
+	public void setSpace(String space) {
+		this.space = space;
+	}
+	
 	
 	@Override
 	@Transactional
@@ -46,7 +54,10 @@ public class ItemsServiceImplementation implements ItemsService {
 		entity.setId("" + this.atomicLong.getAndIncrement());
 		entity.setUserSpace(userSpace);
 		entity.setEmail(userEmail);
-
+		entity.setItemSpace(this.space);
+		entity.setCreatedTimestamp(new Date());
+		
+		
 		entity = this.itemDao.save(entity);
 		
 		
@@ -58,37 +69,23 @@ public class ItemsServiceImplementation implements ItemsService {
 	public ItemBoundary updateItem(String userSpace, String userEmail, String itemSpace, String itemId,
 			ItemBoundary update) {
 		
-		ItemEntity existing = new ItemEntity();
-		
-		
-		
 		Optional<ItemEntity> op = this.itemDao.findById(itemId);
-		if (op.isPresent()) {
-			existing = op.get();
-			
-			ItemEntity updatedEntity = this.boundaryToEntity(update);
-			
-			updatedEntity.setCreatedTimestamp(existing.getCreatedTimestamp());
-			updatedEntity.setId(existing.getId());
-			updatedEntity.setItemSpace(existing.getItemSpace());
-			
-			
+
+		if(op.isPresent()) {
+			ItemEntity existing = op.get();
+			ItemEntity updated = this.boundaryToEntity(update);
+
+			updated.setId(itemId);
+			updated.setItemSpace(existing.getItemSpace());
+			updated.setUserSpace(existing.getUserSpace());
+			updated.setEmail(existing.getEmail());
+			updated.setCreatedTimestamp(existing.getCreatedTimestamp());
+
+			this.itemDao.save(updated);
+
+		}else {
+			throw new RuntimeException(); // TODO: return status = 404 instead of status = 500 
 		}
-//			
-//			if (op.isPresent()) {
-//				MessageEntity existing = op.get();
-//				
-//				MessageEntity updatedEntity = this.convertFromBoundary(update);
-//				
-//				updatedEntity.setId(id);
-//				updatedEntity.setMessageTimestamp(existing.getMessageTimestamp());
-//				updatedEntity.setHelper(existing.getHelper());
-//				
-//				this.messageDao
-//					.save(updatedEntity);
-//			}else {
-//				throw new RuntimeException(); // TODO: return status = 404 instead of status = 500 
-//			}
 		return null;
 	}
 
@@ -158,8 +155,8 @@ public class ItemsServiceImplementation implements ItemsService {
 		boundary.setActive(entity.getActive());
 		boundary.setCreatedTimestamp(entity.getCreatedTimestamp());
 		boundary.setLocation(new Location(entity.getLat(),entity.getLng()));
-		boundary.setItemAttributes(this.unmarshal(entity.getItemAttributes(), Map.class));
 		boundary.setCreatedBy(new CreatedBy(new UserId(entity.getUserSpace(),entity.getEmail())));
+		boundary.setItemAttributes(this.unmarshal(entity.getItemAttributes(), Map.class));
 		return boundary;
 	}
 	

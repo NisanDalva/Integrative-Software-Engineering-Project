@@ -20,11 +20,11 @@ import twins.logic.ItemsServiceImplementation;
 public class ItemController {
 	
 	public enum eTypes {MEAL, DRINK, SOUCE};
-	private ItemsServiceImplementation ItemsServiceImplementation;
+	private ItemsServiceImplementation itemsServiceImplementation;
 	
 	@Autowired
 	public ItemController(ItemsServiceImplementation ItemsServiceImplementation) {
-		this.ItemsServiceImplementation = ItemsServiceImplementation;
+		this.itemsServiceImplementation = ItemsServiceImplementation;
 	}
 	
 	@RequestMapping(
@@ -36,20 +36,8 @@ public class ItemController {
 			@PathVariable("itemSpace") String itemSpace,
 			@PathVariable("itemId") String itemId) {
 		
-		// STUB implementation
-		ItemId id = new ItemId(itemSpace, itemId);
-		CreatedBy createdBy = new CreatedBy(new UserId(userSpace, userEmail));
 		
-		ItemBoundary rv = new ItemBoundary(id, "product type", "product name", createdBy);
-		
-		rv.getItemAttributes().put("type", eTypes.MEAL.name());
-		rv.getItemAttributes().put("price", 53.5);
-		rv.getItemAttributes().put("ingredients", new String[] {"rice", "meat", "tomato", "onion"});
-		rv.getItemAttributes().put("rank", 5);
-		
-		System.err.println(rv);
-		
-		return rv;
+		return itemsServiceImplementation.getSpecificItem(userSpace, userEmail, itemSpace, itemId);
 	}
 	
 	
@@ -60,9 +48,7 @@ public class ItemController {
 		public ItemBoundary[] getAllItems(@PathVariable("userSpace") String userSpace,
 				@PathVariable("userEmail") String userEmail) {
 		
-		// STUB implementation
-		ItemBoundary it = new ItemBoundary(new ItemId("demo_item_space", "demo_item_id"), "demo_type", "demo_name", new CreatedBy(new UserId(userSpace, userEmail)));
-		return new ItemBoundary[] {it, it, it};
+		return itemsServiceImplementation.getAllItems(userSpace, userEmail).toArray(new ItemBoundary[0]);
 	}
 	
 	
@@ -75,12 +61,7 @@ public class ItemController {
 			@PathVariable("userSpace") String userSpace,
 			@PathVariable("userEmail") String userEmail) {
 		
-		// STUB implementation
-//		input.setItemId(new ItemId("demo_space_item", "demo_id"));
-		
-		ItemsServiceImplementation.createItem(userSpace, userEmail, input);
-		
-		return input;
+		return itemsServiceImplementation.createItem(userSpace, userEmail, input);
 	}
 	
 	
@@ -88,14 +69,13 @@ public class ItemController {
 			path="/twins/items/{userSpace}/{userEmail}/{itemSpace}/{itemId}",
 			method = RequestMethod.PUT,
 			consumes = MediaType.APPLICATION_JSON_VALUE)
-	public void UpdateItem(@RequestBody UserBoundary update,
+	public void UpdateItem(@RequestBody ItemBoundary update,
 			@PathVariable("userSpace") String userSpace,
 			@PathVariable("userEmail") String userEmail,
 			@PathVariable("itemSpace") String itemSpace,
 			@PathVariable("itemId") String itemId) {
 		
-		// STUB implementation
-		System.err.println("updated successfully");
+		itemsServiceImplementation.updateItem(userSpace, userEmail, itemSpace, itemId, update);
 	}
 	
 	
