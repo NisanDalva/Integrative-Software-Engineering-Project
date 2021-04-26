@@ -52,7 +52,7 @@ public class ItemsServiceImplementation implements ItemsService {
 		
 		return this.entityToBoundary(entity);
 	}
-
+ 
 	@Override
 	@Transactional
 	public ItemBoundary updateItem(String userSpace, String userEmail, String itemSpace, String itemId,
