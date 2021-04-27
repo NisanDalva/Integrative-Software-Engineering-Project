@@ -14,8 +14,7 @@ import javax.persistence.TemporalType;
 @Table(name="OPERATIONS")
 public class OperationEntity {
 
-	private String id;
-	private String operationSpace;
+	private String id; //id__space
 	private String type;
 	private String itemSpace;
 	private String itemId;
@@ -25,22 +24,6 @@ public class OperationEntity {
 	private String operationAttributes;
 
 	public OperationEntity() {
-		this.createdTimestamp = new Date();
-		this.operationAttributes = null;
-	}
-
-	public OperationEntity(String id, String operationSpace, String type, String itemSpace, String itemId,
-			Date createdTimestamp, String userSpace, String email, String operationAttributes) {
-		this();
-		this.id = id;
-		this.operationSpace = operationSpace;
-		this.type = type;
-		this.itemSpace = itemSpace;
-		this.itemId = itemId;
-		this.createdTimestamp = createdTimestamp;
-		this.userSpace = userSpace;
-		this.email = email;
-		this.operationAttributes = operationAttributes;
 	}
 	
 	@Id
@@ -52,13 +35,6 @@ public class OperationEntity {
 		this.id = id;
 	}
 
-	public String getOperationSpace() {
-		return operationSpace;
-	}
-
-	public void setOperationSpace(String operationSpace) {
-		this.operationSpace = operationSpace;
-	}
 
 	public String getType() {
 		return type;

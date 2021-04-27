@@ -13,8 +13,7 @@ import javax.persistence.TemporalType;
 @Table(name="ITEMS")
 public class ItemEntity {
 	//itemId
-	private String itemSpace;
-	private String id;
+	private String id; //id__space
 	
 	private String type;
 	private String name;
@@ -29,37 +28,7 @@ public class ItemEntity {
 	
 	private String itemAttributes;
 	
-	
 	public ItemEntity() {
-		this.active = true;
-		this.itemAttributes = null;
-		this.createdTimestamp = new Date();
-		this.lat = null;
-		this.lng = null;
-	}
-	
-	public ItemEntity(String itemSpace, String id, String type, String name, Boolean active, Date createdTimestamp,
-			String userSpace, String email, Double lat, Double lng, String itemAttributes) {
-		this();
-		this.itemSpace = itemSpace;
-		this.id = id;
-		this.type = type;
-		this.name = name;
-		this.active = active;
-		this.createdTimestamp = createdTimestamp;
-		this.userSpace = userSpace;
-		this.email = email;
-		this.lat = lat;
-		this.lng = lng;
-		this.itemAttributes = itemAttributes;
-	}
-
-	public String getItemSpace() {
-		return itemSpace;
-	}
-
-	public void setItemSpace(String itemSpace) {
-		this.itemSpace = itemSpace;
 	}
 
 	@Id
@@ -96,7 +65,7 @@ public class ItemEntity {
 	}
 
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="MESSAGE_CREATION")
+	@Column(name="ITEM_CREATION")
 	public Date getCreatedTimestamp() {
 		return createdTimestamp;
 	}

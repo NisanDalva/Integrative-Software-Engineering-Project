@@ -1,6 +1,9 @@
 package twins.controllers;
 
 
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -11,18 +14,32 @@ import org.springframework.web.bind.annotation.RestController;
 import twins.NewUserDetails;
 import twins.UserId;
 import twins.boundaries.UserBoundary;
+import twins.logic.UsersServiceImplementation;
 
 
 @RestController
 public class UserController {
+	private UsersServiceImplementation usersServiceImplementation;
+	private String space;
+	
+	@Value("${spring.application.name}")
+	public void setSpace(String space) {
+		this.space = space;
+	}
+	
+	@Autowired
+	public void setUsersServiceImplementation(UsersServiceImplementation usersServiceImplementation) {
+		this.usersServiceImplementation = usersServiceImplementation;
+	}
+	
 	@RequestMapping(
 			path = "/twins/users",
 			method = RequestMethod.POST,
 			produces = MediaType.APPLICATION_JSON_VALUE,
 			consumes = MediaType.APPLICATION_JSON_VALUE)
 	public UserBoundary CreateNewUser(@RequestBody NewUserDetails input) {
-		UserBoundary user = new UserBoundary(new UserId("demo_userSpace","demo_userEmail"), input.getRole(), input.getUsername(), input.getAvatar());
-		return user;
+		UserBoundary boundary = new UserBoundary(new UserId(this.space, input.getEmail()), input.getRole(), input.getUsername(), input.getAvatar());
+		return usersServiceImplementation.createUser(boundary);
 	}
 	
 	@RequestMapping(
@@ -32,8 +49,7 @@ public class UserController {
 	public UserBoundary LoginAndRetrieve(@PathVariable("userSpace") String userSpace,
 			@PathVariable("userEmail") String userEmail) {
 		
-		UserBoundary user = new UserBoundary(new UserId(userSpace,userEmail), "manager", "dolev", "12345");
-		return user;
+		return this.usersServiceImplementation.login(userSpace, userEmail);
 	}
 	
 	@RequestMapping(
@@ -44,7 +60,7 @@ public class UserController {
 			@PathVariable("userEmail") String userEmail,
 			@RequestBody UserBoundary update) {
 		
-		System.err.println("updated successfully");
+		this.usersServiceImplementation.updateUser(userSpace, userEmail, update);
 	}
 	
 }

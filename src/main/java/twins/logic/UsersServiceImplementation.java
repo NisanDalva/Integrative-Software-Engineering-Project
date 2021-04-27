@@ -35,6 +35,8 @@ public class UsersServiceImplementation implements UsersService {
 	@Transactional
 	public UserBoundary createUser(UserBoundary user) {
 		UserEntity entity = this.convertFromBoundary(user);
+		
+		
 		entity = this.userDao.save(entity);
 		return this.convertToBoundary(entity);
 	}
@@ -44,22 +46,28 @@ public class UsersServiceImplementation implements UsersService {
 		boundary.setUsername(entity.getUsername());
 		boundary.setAvatar(entity.getAvatar());
 		boundary.setRole(entity.getRole());
-		UserId userid=new UserId(this.springApplictionName,entity.getEmail());
+		
+		String tmp[] = entity.getEmail().split("__");
+		UserId userid=new UserId(tmp[1], tmp[0]);
 		boundary.setUserid(userid);
 		return boundary;
 	}
 
 	private UserEntity convertFromBoundary(UserBoundary user) {
 		UserEntity entity = new UserEntity();	
-		//entity.setSpace(this.springApplictionName);
+
 		
 		if (UserRole.valueOf(user.getRole())==null ) /// check later what valueOf returns!!!!
 			throw new RuntimeException("invalid role");
+		
+//		System.err.println(user.getUserid().getEmail());
+//		System.err.println(user.getUserid());
+		
 		if(!isValidEmailAddress(user.getUserid().getEmail()))
-			throw new RuntimeException("wrong eamil");
+			throw new RuntimeException("wrong email");
 		if(user.getUsername()==null)
 			throw new RuntimeException("User name cant be null!");
-		if(user.getAvatar()!=null&&user.getAvatar()!="")
+		if(user.getAvatar() == null&&user.getAvatar() == "")
 			throw new RuntimeException("invalid avatar");
 			
 		entity.setRole(user.getRole());

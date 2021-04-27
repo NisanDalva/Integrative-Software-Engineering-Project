@@ -23,7 +23,6 @@ import twins.boundaries.ItemBoundary;
 import twins.data.ItemDao;
 import twins.data.ItemEntity;
 
-//@SuppressWarnings("unused")
 @Service
 public class ItemsServiceImplementation implements ItemsService {
 	private ItemDao itemDao;
@@ -51,12 +50,10 @@ public class ItemsServiceImplementation implements ItemsService {
 
 		ItemEntity entity = this.boundaryToEntity(item);
 		
-		entity.setId("" + this.atomicLong.getAndIncrement());
+		entity.setId("" + this.atomicLong.getAndIncrement() + "__" + this.space);
 		entity.setUserSpace(userSpace);
 		entity.setEmail(userEmail);
-		entity.setItemSpace(this.space);
 		entity.setCreatedTimestamp(new Date());
-		
 		
 		entity = this.itemDao.save(entity);
 		
@@ -69,24 +66,23 @@ public class ItemsServiceImplementation implements ItemsService {
 	public ItemBoundary updateItem(String userSpace, String userEmail, String itemSpace, String itemId,
 			ItemBoundary update) {
 		
-		Optional<ItemEntity> op = this.itemDao.findById(itemId);
-
+		Optional<ItemEntity> op = this.itemDao.findById(itemId + "__" + itemSpace);
+		ItemEntity updated = this.boundaryToEntity(update);
+		ItemEntity existing;
 		if(op.isPresent()) {
-			ItemEntity existing = op.get();
-			ItemEntity updated = this.boundaryToEntity(update);
-
-			updated.setId(itemId);
-			updated.setItemSpace(existing.getItemSpace());
+			existing = op.get();
+			
+			updated.setId(itemId + "__" + itemSpace);
 			updated.setUserSpace(existing.getUserSpace());
 			updated.setEmail(existing.getEmail());
 			updated.setCreatedTimestamp(existing.getCreatedTimestamp());
 
 			this.itemDao.save(updated);
-
+			
 		}else {
 			throw new RuntimeException(); // TODO: return status = 404 instead of status = 500 
 		}
-		return null;
+		return this.entityToBoundary(updated);
 	}
 
 	// TODO make sure race conditions are handled
@@ -106,7 +102,7 @@ public class ItemsServiceImplementation implements ItemsService {
 	@Override
 	@Transactional(readOnly = true)
 	public ItemBoundary getSpecificItem(String userSpace, String userEmail, String itemSpace, String itemId) {
-		Optional<ItemEntity> op = this.itemDao.findById(itemId); //check how to get specific item. 
+		Optional<ItemEntity> op = this.itemDao.findById(itemId + "__" + itemSpace); //check how to get specific item. 
 		if (op.isPresent()) {
 			ItemEntity entity = op.get();
 			return this.entityToBoundary(entity);
@@ -120,7 +116,6 @@ public class ItemsServiceImplementation implements ItemsService {
 		
 		if (boundary.getItemId() != null) {
 			entity.setId(boundary.getItemId().getId());
-			entity.setItemSpace(boundary.getItemId().getSpace());
 		}
 		
 		if (boundary.getCreatedBy() != null) {
@@ -140,16 +135,14 @@ public class ItemsServiceImplementation implements ItemsService {
 		entity.setItemAttributes(this.marshal(boundary.getItemAttributes()));
 		entity.setName(boundary.getName());
 		entity.setType(boundary.getType());
-		
-		
-		
-	
+
 		return entity;
 	}
 	
 	private ItemBoundary entityToBoundary(ItemEntity entity) {
 		ItemBoundary boundary = new ItemBoundary();
-		boundary.setItemId(new ItemId(entity.getItemSpace(),entity.getId()));
+		String tmp[] = entity.getId().split("__");
+		boundary.setItemId(new ItemId(tmp[1],tmp[0]));
 		boundary.setType(entity.getType());
 		boundary.setName(entity.getName());
 		boundary.setActive(entity.getActive());
@@ -163,7 +156,7 @@ public class ItemsServiceImplementation implements ItemsService {
 	@Override
 	@Transactional
 	public void deleteAllItems(String adminSpace, String adminEmail) {
-		itemDao.deleteAll();
+		this.itemDao.deleteAll(); //DELETE BY SPACE ??
 	}
 	
 	// use Jackson to convert JSON to Object

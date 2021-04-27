@@ -2,7 +2,6 @@ package twins.data;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 import twins.UserId;
 @Entity
@@ -36,13 +35,6 @@ public class UserEntity {
 		this.email = email;
 	}
 	
-	//public String getSpace() {
-	//	return space;
-	//}
-//	@Id
-	//public void setSpace(String space) {
-	//	this.space = space;
-	//}
 	
 	public String getRole() {
 		return role;
@@ -52,7 +44,7 @@ public class UserEntity {
 		this.role = role;
 	}
 	
-	//@Id
+	
 	public String getUsername() {
 		return username;
 	}
