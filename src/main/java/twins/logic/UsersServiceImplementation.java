@@ -6,6 +6,8 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,7 +18,7 @@ import twins.data.UserEntity;
 import twins.data.UserRole;
 
 @Service
-public class UsersServiceImplementation implements UsersService {
+public class UsersServiceImplementation implements AdvancedUserService {
 	private UserDao userDao;
 	private String springApplictionName;
 	
@@ -126,13 +128,14 @@ public class UsersServiceImplementation implements UsersService {
 	@Override
 	@Transactional(readOnly = true)
 	public List<UserBoundary> getAllUsers(String adminSpace, String adminEmail) {
-			Iterable<UserEntity> allUsersEntities = this.userDao.findAll();
-			List<UserBoundary> usersBoundaryList = new ArrayList<>();
-			for (UserEntity entity : allUsersEntities) {
-				UserBoundary boundary = convertToBoundary(entity);
-				usersBoundaryList.add(boundary);
-			}
-			return usersBoundaryList;
+//			Iterable<UserEntity> allUsersEntities = this.userDao.findAll();
+//			List<UserBoundary> usersBoundaryList = new ArrayList<>();
+//			for (UserEntity entity : allUsersEntities) {
+//				UserBoundary boundary = convertToBoundary(entity);
+//				usersBoundaryList.add(boundary);
+//			}
+//			return usersBoundaryList;
+		throw new RuntimeException("deprecated operation - use the new API getAllUsers(userSpace, userEmail, size, page)");
 		}
 
 	@Override
@@ -140,6 +143,17 @@ public class UsersServiceImplementation implements UsersService {
 	public void deleteAllUsers(String adminSpace, String adminEmail) {
 			this.userDao.deleteAll();	
 	
+	}
+
+	@Override
+	public List<UserBoundary> getAllUsers(String adminSpace, String adminEmail, int size, int page) {
+		Iterable<UserEntity> allUsersEntities = this.userDao.findAll(PageRequest.of(page, size, Direction.ASC, "username", "email"));
+		List<UserBoundary> usersBoundaryList = new ArrayList<>();
+		for (UserEntity entity : allUsersEntities) {
+			UserBoundary boundary = convertToBoundary(entity);
+			usersBoundaryList.add(boundary);
+		}
+		return usersBoundaryList;
 	}
 
 }
