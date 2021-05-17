@@ -10,6 +10,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,7 +26,7 @@ import twins.data.ItemDao;
 import twins.data.ItemEntity;
 
 @Service
-public class ItemsServiceImplementation implements ItemsService {
+public class ItemsServiceImplementation implements AdvancedItemService {
 	private ItemDao itemDao;
 	private ObjectMapper jackson;
 	private AtomicLong atomicLong; // TODO DO NOT RELY ON ATOMIC LONG IN PRODUCTION!!!!
@@ -89,14 +91,15 @@ public class ItemsServiceImplementation implements ItemsService {
 	@Override
 	@Transactional(readOnly = true)
 	public List<ItemBoundary> getAllItems(String userSpace, String userEmail) {
-		Iterable<ItemEntity> allEntities = this.itemDao.findAll();
-		List<ItemBoundary> rv = new ArrayList<>();
-		for (ItemEntity entity : allEntities) {
-			// TODO create a generic converter from entity to boundary
-			ItemBoundary boundary = entityToBoundary(entity);		
-			rv.add(boundary);
-		}		
-		return rv;
+//		Iterable<ItemEntity> allEntities = this.itemDao.findAll();
+//		List<ItemBoundary> rv = new ArrayList<>();
+//		for (ItemEntity entity : allEntities) {
+//			// TODO create a generic converter from entity to boundary
+//			ItemBoundary boundary = entityToBoundary(entity);		
+//			rv.add(boundary);
+//		}		
+//		return rv;
+		throw new RuntimeException("deprecated operation - use the new API getAllItems(userSpace, userEmail, size, page)");
 	}
 
 	@Override
@@ -176,6 +179,19 @@ public class ItemsServiceImplementation implements ItemsService {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	@Override
+	public List<ItemBoundary> getAllItems(String userSpace, String userEmail, int size, int page) {
+		Iterable<ItemEntity> allEntities = this.itemDao.findAll(PageRequest.of(page, size, Direction.ASC, "name", "id"));
+		
+		List<ItemBoundary> rv = new ArrayList<>();
+		for (ItemEntity entity : allEntities) {
+			// TODO create a generic converter from entity to boundary
+			ItemBoundary boundary = entityToBoundary(entity);		
+			rv.add(boundary);
+		}		
+		return rv;
 	}
 
 }
