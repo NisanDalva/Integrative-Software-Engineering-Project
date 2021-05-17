@@ -89,7 +89,9 @@ public class AdminController {
 			method = RequestMethod.GET,
 			produces = MediaType.APPLICATION_JSON_VALUE)
 	public OperationBoundary[] exportAllOperations(@PathVariable("userSpace") String userSpace,
-			@PathVariable("userEmail") String userEmail) {
+			@PathVariable("userEmail") String userEmail,
+			@RequestParam(name="size", required = false, defaultValue = "5") int size,
+			@RequestParam(name="page", required = false, defaultValue = "0")  int page) {
 
 		List<OperationBoundary> rv = this.operationsServiceImplementation.getAllOperations(userSpace, userEmail);
 

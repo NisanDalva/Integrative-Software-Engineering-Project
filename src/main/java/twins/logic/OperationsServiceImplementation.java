@@ -8,6 +8,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +25,7 @@ import twins.data.OperationDao;
 import twins.data.OperationEntity;
 
 @Service
-public class OperationsServiceImplementation implements OperationsService {
+public class OperationsServiceImplementation implements AdvancedOperationsService {
 	private OperationDao operationDao;
 	private ObjectMapper jackson;
 	private AtomicLong atomicLong; // TODO DO NOT RELY ON ATOMIC LONG IN PRODUCTION!!!!
@@ -74,14 +76,15 @@ public class OperationsServiceImplementation implements OperationsService {
 
 	@Override
 	public List<OperationBoundary> getAllOperations(String adminSpace, String adminEmail) {
-		Iterable<OperationEntity> allOperationsEntities = this.operationDao.findAll();
-		List<OperationBoundary> operationsBoundaryList = new ArrayList<>();
-		
-		for (OperationEntity entity : allOperationsEntities) {
-			OperationBoundary boundary = entityToBoundary(entity);
-			operationsBoundaryList.add(boundary);
-		}
-		return operationsBoundaryList;
+//		Iterable<OperationEntity> allOperationsEntities = this.operationDao.findAll();
+//		List<OperationBoundary> operationsBoundaryList = new ArrayList<>();
+//		
+//		for (OperationEntity entity : allOperationsEntities) {
+//			OperationBoundary boundary = entityToBoundary(entity);
+//			operationsBoundaryList.add(boundary);
+//		}
+//		return operationsBoundaryList;
+		throw new RuntimeException("deprecated operation - use the new API getAllItems(userSpace, userEmail, size, page)");
 	}
 
 	private OperationEntity boundaryToEntity(OperationBoundary boundary) {
@@ -144,5 +147,17 @@ public class OperationsServiceImplementation implements OperationsService {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	@Override
+	public List<OperationBoundary> getAllOperations(String adminSpace, String adminEmail, int size, int page) {
+		Iterable<OperationEntity> allOperationsEntities = this.operationDao.findAll(PageRequest.of(page, size, Direction.ASC, "type", "id"));
+		List<OperationBoundary> operationsBoundaryList = new ArrayList<>();
+		
+		for (OperationEntity entity : allOperationsEntities) {
+			OperationBoundary boundary = entityToBoundary(entity);
+			operationsBoundaryList.add(boundary);
+		}
+		return operationsBoundaryList;
 	}
 }
