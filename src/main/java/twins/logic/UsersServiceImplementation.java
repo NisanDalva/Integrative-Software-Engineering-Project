@@ -141,12 +141,19 @@ public class UsersServiceImplementation implements AdvancedUserService {
 	@Override
 	@Transactional//(readOnly = false)
 	public void deleteAllUsers(String adminSpace, String adminEmail) {
-			this.userDao.deleteAll();	
+		UserBoundary user= this.login(adminSpace, adminEmail);
+		if(user.getRole().equals("ADMIN")) 
+			this.userDao.deleteAll();
+		else
+			throw new RuntimeException("Only admin can delete all users!");
+			
 	
 	}
 
 	@Override
 	public List<UserBoundary> getAllUsers(String adminSpace, String adminEmail, int size, int page) {
+		UserBoundary user= this.login(adminSpace, adminEmail);
+		if(user.getRole().equals("ADMIN")) {
 		Iterable<UserEntity> allUsersEntities = this.userDao.findAll(PageRequest.of(page, size, Direction.ASC, "username", "email"));
 		List<UserBoundary> usersBoundaryList = new ArrayList<>();
 		for (UserEntity entity : allUsersEntities) {
@@ -154,6 +161,9 @@ public class UsersServiceImplementation implements AdvancedUserService {
 			usersBoundaryList.add(boundary);
 		}
 		return usersBoundaryList;
+		}
+		else
+			throw new RuntimeException("Only admin can get all users!");
 	}
 
 }
