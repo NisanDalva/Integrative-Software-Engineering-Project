@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,7 +29,6 @@ import twins.data.OperationEntity;
 public class OperationsServiceImplementation implements AdvancedOperationsService {
 	private OperationDao operationDao;
 	private ObjectMapper jackson;
-	private AtomicLong atomicLong; // TODO DO NOT RELY ON ATOMIC LONG IN PRODUCTION!!!!
 	private String space;
 	private UsersServiceImplementation usersServiceImplementation;
 
@@ -43,7 +42,6 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 		super();
 		this.operationDao = operationDao;
 		this.jackson = new ObjectMapper();
-		this.atomicLong = new AtomicLong(1L);
 	}
 
 	@Value("${spring.application.name}")
@@ -70,7 +68,7 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 		operation.setCreatedTimestamp(new Date());
 
 		OperationEntity entity = this.boundaryToEntity(operation);
-		entity.setId("" + this.atomicLong.getAndIncrement());
+		entity.setId(UUID.randomUUID().toString());
 
 		entity = this.operationDao.save(entity);
 		return this.entityToBoundary(entity);

@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.UUID;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +30,6 @@ import twins.data.ItemEntity;
 public class ItemsServiceImplementation implements AdvancedItemService {
 	private ItemDao itemDao;
 	private ObjectMapper jackson;
-	private AtomicLong atomicLong; // TODO DO NOT RELY ON ATOMIC LONG IN PRODUCTION!!!!
 	private String space;
 	private UsersServiceImplementation usersServiceImplementation;
 
@@ -39,7 +38,6 @@ public class ItemsServiceImplementation implements AdvancedItemService {
 		super();
 		this.itemDao = itemDao;
 		this.jackson = new ObjectMapper();
-		this.atomicLong = new AtomicLong(1L);
 	}
 
 	@Autowired
@@ -60,7 +58,7 @@ public class ItemsServiceImplementation implements AdvancedItemService {
 		if(user.getRole().equals("MANAGER")) {
 			ItemEntity entity = this.boundaryToEntity(item);
 
-			entity.setId("" + this.atomicLong.getAndIncrement() + "__" + this.space);
+			entity.setId(UUID.randomUUID().toString() + "__" + this.space);
 			entity.setUserSpace(userSpace);
 			entity.setEmail(userEmail);
 			entity.setCreatedTimestamp(new Date());
