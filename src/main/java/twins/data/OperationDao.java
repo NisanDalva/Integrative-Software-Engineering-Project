@@ -1,7 +1,7 @@
 package twins.data;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
-public interface OperationDao extends CrudRepository<OperationEntity, String> {
+public interface OperationDao extends PagingAndSortingRepository<OperationEntity, String> {
 
 }

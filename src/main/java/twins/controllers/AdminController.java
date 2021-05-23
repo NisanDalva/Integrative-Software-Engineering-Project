@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import twins.boundaries.OperationBoundary;
@@ -73,7 +74,9 @@ public class AdminController {
 			method = RequestMethod.GET,
 			produces = MediaType.APPLICATION_JSON_VALUE)
 		public UserBoundary[] exportAllUsers(@PathVariable("userSpace") String userSpace,
-				@PathVariable("userEmail") String userEmail) {
+				@PathVariable("userEmail") String userEmail,
+				@RequestParam(name="size", required = false, defaultValue = "5") int size,
+				@RequestParam(name="page", required = false, defaultValue = "0")  int page) {
 			
 		List<UserBoundary> rv = this.usersServiceImplementation.getAllUsers(userSpace, userEmail);
 		
@@ -86,7 +89,9 @@ public class AdminController {
 			method = RequestMethod.GET,
 			produces = MediaType.APPLICATION_JSON_VALUE)
 	public OperationBoundary[] exportAllOperations(@PathVariable("userSpace") String userSpace,
-			@PathVariable("userEmail") String userEmail) {
+			@PathVariable("userEmail") String userEmail,
+			@RequestParam(name="size", required = false, defaultValue = "5") int size,
+			@RequestParam(name="page", required = false, defaultValue = "0")  int page) {
 
 		List<OperationBoundary> rv = this.operationsServiceImplementation.getAllOperations(userSpace, userEmail);
 
