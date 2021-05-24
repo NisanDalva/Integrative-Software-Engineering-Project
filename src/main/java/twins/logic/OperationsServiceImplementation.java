@@ -31,6 +31,7 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 	private ObjectMapper jackson;
 	private String space;
 	private UsersServiceImplementation usersServiceImplementation;
+	private Utils utils;
 
 
 	@Autowired
@@ -42,6 +43,11 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 		super();
 		this.operationDao = operationDao;
 		this.jackson = new ObjectMapper();
+	}
+	
+	@Autowired
+	public void setUtils(Utils utils) {
+		this.utils = utils;
 	}
 
 	@Value("${spring.application.name}")
@@ -113,7 +119,7 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 
 		entity.setType(boundary.getType());
 		entity.setCreatedTimestamp(boundary.getCreatedTimestamp());		
-		entity.setOperationAttributes(this.marshal(boundary.getOperationAttributes()));
+		entity.setOperationAttributes(this.utils.marshal(boundary.getOperationAttributes()));
 		return entity;
 	}
 
@@ -125,7 +131,7 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 		boundary.setInvokedBy(new InvokedBy(new UserId(entity.getUserSpace(), entity.getEmail())));
 		boundary.setOperationId(new OperationId(this.space, entity.getId().split("__")[0]));
 		boundary.setItem(new Item(new ItemId(entity.getItemSpace(), entity.getItemId())));
-		boundary.setOperationAttributes(this.unmarshal(entity.getOperationAttributes(), Map.class));
+		boundary.setOperationAttributes(this.utils.unmarshal(entity.getOperationAttributes(), Map.class));
 
 		return boundary;
 	}
@@ -139,24 +145,6 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 		else
 			throw new RuntimeException("Only admin delete all operations! ");
 			
-	}
-
-	private <T> T unmarshal(String json, Class<T> type) {
-		try {
-			return this.jackson
-					.readValue(json, type);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	private String marshal(Object moreDetails) {
-		try {
-			return this.jackson
-					.writeValueAsString(moreDetails);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
 	}
 
 	@Override

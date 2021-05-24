@@ -98,7 +98,7 @@ public class UsersServiceImplementation implements AdvancedUserService {
 			UserBoundary user= convertToBoundary(existing);
 			return user;}
 		else {
-			throw new RuntimeException(); // TODO: return status = 404 instead of status = 500 
+			throw new RuntimeException("user not found"); // TODO: return status = 404 instead of status = 500 
 		}
 	}
 

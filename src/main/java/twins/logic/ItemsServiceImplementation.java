@@ -15,7 +15,6 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import twins.CreatedBy;
 import twins.ItemId;
@@ -29,20 +28,24 @@ import twins.data.ItemEntity;
 @Service
 public class ItemsServiceImplementation implements AdvancedItemService {
 	private ItemDao itemDao;
-	private ObjectMapper jackson;
 	private String space;
 	private UsersServiceImplementation usersServiceImplementation;
+	private Utils utils;
 
 	@Autowired
 	public ItemsServiceImplementation(ItemDao itemDao) {
 		super();
 		this.itemDao = itemDao;
-		this.jackson = new ObjectMapper();
 	}
 
 	@Autowired
 	public void setUsersServiceImplementation(UsersServiceImplementation usersServiceImplementation) {
 		this.usersServiceImplementation = usersServiceImplementation;
+	}
+	
+	@Autowired
+	public void setUtils(Utils utils) {
+		this.utils = utils;
 	}
 
 	@Value("${spring.application.name}")
@@ -163,7 +166,7 @@ public class ItemsServiceImplementation implements AdvancedItemService {
 
 		entity.setActive(boundary.getActive());
 		entity.setCreatedTimestamp(boundary.getCreatedTimestamp());
-		entity.setItemAttributes(this.marshal(boundary.getItemAttributes()));
+		entity.setItemAttributes(this.utils.marshal(boundary.getItemAttributes()));
 		entity.setName(boundary.getName());
 		entity.setType(boundary.getType());
 
@@ -180,7 +183,7 @@ public class ItemsServiceImplementation implements AdvancedItemService {
 		boundary.setCreatedTimestamp(entity.getCreatedTimestamp());
 		boundary.setLocation(new Location(entity.getLat(),entity.getLng()));
 		boundary.setCreatedBy(new CreatedBy(new UserId(entity.getUserSpace(),entity.getEmail())));
-		boundary.setItemAttributes(this.unmarshal(entity.getItemAttributes(), Map.class));
+		boundary.setItemAttributes(this.utils.unmarshal(entity.getItemAttributes(), Map.class));
 		return boundary;
 	}
 
@@ -192,25 +195,6 @@ public class ItemsServiceImplementation implements AdvancedItemService {
 			this.itemDao.deleteAll(); //DELETE BY SPACE ??
 		else
 			throw new RuntimeException("Only admin delete all items!");
-	}
-
-	// use Jackson to convert JSON to Object
-	private <T> T unmarshal(String json, Class<T> type) {
-		try {
-			return this.jackson
-					.readValue(json, type);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	private String marshal(Object moreDetails) {
-		try {
-			return this.jackson
-					.writeValueAsString(moreDetails);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
 	}
 
 	@Override
