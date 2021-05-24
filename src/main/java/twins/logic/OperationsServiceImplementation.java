@@ -13,13 +13,13 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import twins.InvokedBy;
 import twins.Item;
 import twins.ItemId;
 import twins.OperationId;
 import twins.UserId;
+import twins.Exceptions.AccessDeniedException;
+import twins.Exceptions.InvalidOperationException;
 import twins.boundaries.OperationBoundary;
 import twins.boundaries.UserBoundary;
 import twins.data.OperationDao;
@@ -28,7 +28,6 @@ import twins.data.OperationEntity;
 @Service
 public class OperationsServiceImplementation implements AdvancedOperationsService {
 	private OperationDao operationDao;
-	private ObjectMapper jackson;
 	private String space;
 	private UsersServiceImplementation usersServiceImplementation;
 	private Utils utils;
@@ -42,7 +41,6 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 	public OperationsServiceImplementation(OperationDao operationDao) {
 		super();
 		this.operationDao = operationDao;
-		this.jackson = new ObjectMapper();
 	}
 	
 	@Autowired
@@ -58,17 +56,17 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 	@Override
 	public Object invokeOperation(OperationBoundary operation) {
 		if(operation == null)
-			throw new RuntimeException("null operation");
+			throw new InvalidOperationException("Operation can't be null");
 
 		if(operation.getType() == null)
-			throw new RuntimeException("null type");
+			throw new InvalidOperationException("Operation type can't be null");
 
 		if(operation.getInvokedBy() == null || operation.getInvokedBy().getUserId() == null)
-			throw new RuntimeException("null invoked by or null user id");
+			throw new InvalidOperationException("InvokedBy or userId is null!");
 
 		if(operation.getItem() == null || operation.getItem().getItemId() == null
 				|| operation.getItem().getItemId().getId() == null)
-			throw new RuntimeException("null item or its attributes");
+			throw new InvalidOperationException("The item or its attributes is null!");
 
 		operation.getInvokedBy().getUserId().setSpace(space);
 		operation.setCreatedTimestamp(new Date());
@@ -95,7 +93,7 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 		//			operationsBoundaryList.add(boundary);
 		//		}
 		//		return operationsBoundaryList;
-		throw new RuntimeException("deprecated operation - use the new API getAllItems(userSpace, userEmail, size, page)");
+		throw new RuntimeException("deprecated operation - use the new API getAllOperations(userSpace, userEmail, size, page)");
 	}
 
 	private OperationEntity boundaryToEntity(OperationBoundary boundary) {
@@ -143,7 +141,7 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 		if(user.getRole().equals("ADMIN"))
 			this.operationDao.deleteAll();
 		else
-			throw new RuntimeException("Only admin delete all operations! ");
+			throw new AccessDeniedException(user.getRole() + " can't delete all operations! (Only ADMIN)");
 			
 	}
 
@@ -161,7 +159,6 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 			return operationsBoundaryList;
 		}
 		else
-			throw new RuntimeException("Only admin can get all operations!!");
-
+			throw new AccessDeniedException(user.getRole() + " can't get all operations! (Only ADMIN)");
 	}
 }

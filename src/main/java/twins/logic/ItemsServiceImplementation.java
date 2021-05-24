@@ -20,6 +20,8 @@ import twins.CreatedBy;
 import twins.ItemId;
 import twins.Location;
 import twins.UserId;
+import twins.Exceptions.AccessDeniedException;
+import twins.Exceptions.ItemNotFoundException;
 import twins.boundaries.ItemBoundary;
 import twins.boundaries.UserBoundary;
 import twins.data.ItemDao;
@@ -68,12 +70,11 @@ public class ItemsServiceImplementation implements AdvancedItemService {
 
 			entity = this.itemDao.save(entity);
 
-
 			return this.entityToBoundary(entity);
 
 		}
 		else
-			throw new RuntimeException("Only manager can create items!");
+			throw new AccessDeniedException(user.getRole() + " can't create items! (Only MANAGER)");
 
 	}
 
@@ -97,12 +98,12 @@ public class ItemsServiceImplementation implements AdvancedItemService {
 				this.itemDao.save(updated);
 
 			}else {
-				throw new RuntimeException(); // TODO: return status = 404 instead of status = 500 
+				throw new ItemNotFoundException("item with id " + itemId + "__" + itemSpace + " not available in the database");
 			}
 			return this.entityToBoundary(updated);
 		}
 		else
-			throw new RuntimeException("Only manager can update item!");
+			throw new AccessDeniedException(user.getRole() + " can't update item! (Only MANAGER)");
 	}
 
 	// TODO make sure race conditions are handled
@@ -125,7 +126,7 @@ public class ItemsServiceImplementation implements AdvancedItemService {
 	public ItemBoundary getSpecificItem(String userSpace, String userEmail, String itemSpace, String itemId) {
 		UserBoundary user= usersServiceImplementation.login(userSpace, userEmail);
 		String userRole=user.getRole();
-		if(userRole.equals("MANAGER")||userRole.equals("Player")) {
+		if(userRole.equals("MANAGER")||userRole.equals("PLAYER")) {
 			Optional<ItemEntity> op = this.itemDao.findById(itemId + "__" + itemSpace); //check how to get specific item. 
 			if (op.isPresent()) {
 				ItemEntity entity = op.get();
@@ -133,16 +134,14 @@ public class ItemsServiceImplementation implements AdvancedItemService {
 				if(active==true||(active==false&&userRole.equals("MANAGER")))
 					return this.entityToBoundary(entity);
 				else
-					throw new RuntimeException("Only manager can get items that not activate!");
+					throw new AccessDeniedException(userRole + " can't get items that not activate! (Only MANAGER)");
 
 			} else {
-				throw new RuntimeException(); // TODO: return status = 404 instead of status = 500 
+				throw new ItemNotFoundException("item with id " + itemId + "__" + itemSpace + " not available in the database");
 			}
 		}
 		else
-			throw new RuntimeException("Admin cant get specific items!");
-
-
+			throw new AccessDeniedException(userRole + " can't get specific items! (Only PLAYER or MANAGER)");
 	}
 
 	private ItemEntity boundaryToEntity(ItemBoundary boundary) {
@@ -194,7 +193,7 @@ public class ItemsServiceImplementation implements AdvancedItemService {
 		if(user.getRole().equals("ADMIN"))
 			this.itemDao.deleteAll(); //DELETE BY SPACE ??
 		else
-			throw new RuntimeException("Only admin delete all items!");
+			throw new AccessDeniedException(user.getRole() + " can't delete all items! (Only ADMIN)");
 	}
 
 	@Override
@@ -217,12 +216,9 @@ public class ItemsServiceImplementation implements AdvancedItemService {
 			rv.removeIf(n -> n.getActive().equals(false));
 			//rv.stream().filter(n->n.getActive().equals(false)) //plan B
 			return rv;
-			
 		}
 		else
-			throw new RuntimeException("admin cant get all users!");
+			throw new AccessDeniedException(userRole + " can't get all users!");
 	}
-
-
 
 }
