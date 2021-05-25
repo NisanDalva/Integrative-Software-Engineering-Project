@@ -10,8 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import twins.InvokedBy;
 import twins.Item;
@@ -20,6 +22,7 @@ import twins.OperationId;
 import twins.UserId;
 import twins.Exceptions.AccessDeniedException;
 import twins.Exceptions.InvalidOperationException;
+import twins.boundaries.ItemBoundary;
 import twins.boundaries.OperationBoundary;
 import twins.boundaries.UserBoundary;
 import twins.data.OperationDao;
@@ -30,9 +33,17 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 	private OperationDao operationDao;
 	private String space;
 	private UsersServiceImplementation usersServiceImplementation;
+	private ItemsServiceImplementation itemsServiceImplementation;
 	private Utils utils;
+	private JmsTemplate jmsTemplate;
+	private ObjectMapper jackson;
 
 
+	@Autowired
+	public void setItemsServiceImplementation(ItemsServiceImplementation itemsServiceImplementation) {
+		this.itemsServiceImplementation = itemsServiceImplementation;
+	}
+	
 	@Autowired
 	public void setUsersServiceImplementation(UsersServiceImplementation usersServiceImplementation) {
 		this.usersServiceImplementation = usersServiceImplementation;
@@ -57,7 +68,14 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 	public Object invokeOperation(OperationBoundary operation) {
 		if(operation == null)
 			throw new InvalidOperationException("Operation can't be null");
-
+		UserId userId=operation.getInvokedBy().getUserId();
+		UserBoundary user= usersServiceImplementation.login(userId.getSpace(), userId.getEmail());
+		ItemId itemId=operation.getItem().getItemId();
+		ItemBoundary item=itemsServiceImplementation.getSpecificItem(userId.getSpace(), userId.getEmail(), itemId.getSpace(),itemId.getId());
+		if(user.getRole()!="PLAYER")
+			throw new AccessDeniedException("Only Player can invoke oprerations!");
+		if(item.getActive()==false)
+			throw new AccessDeniedException("Item need to be active to invoke oprerations!");
 		if(operation.getType() == null)
 			throw new InvalidOperationException("Operation type can't be null");
 
@@ -81,6 +99,27 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 	@Override
 	public OperationBoundary invokeAsynchronousOperation(OperationBoundary operation) {
 		return (OperationBoundary) invokeOperation(operation);
+	}
+	
+	public OperationBoundary sendAndForget(OperationBoundary input) {
+		try {
+			OperationId id=input.getOperationId();
+			id.setId(UUID.randomUUID().toString());
+			input.setOperationId(id);
+			
+			String json = this.jackson
+				.writeValueAsString(input);
+			
+			// send json to MOM
+			this.jmsTemplate.send(
+					"Operations", // destination name 
+					session->session.createTextMessage(json)); // lambda that creates a text message
+
+
+			return input;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
