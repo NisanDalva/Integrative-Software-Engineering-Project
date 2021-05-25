@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.jms.core.JmsTemplate;
@@ -188,7 +189,8 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 	public List<OperationBoundary> getAllOperations(String adminSpace, String adminEmail, int size, int page) {
 		UserBoundary user= usersServiceImplementation.login(adminSpace, adminEmail);
 		if(user.getRole().equals("ADMIN")) {
-			Iterable<OperationEntity> allOperationsEntities = this.operationDao.findAll(PageRequest.of(page, size, Direction.ASC, "type", "id"));
+			Page<OperationEntity> operationsEntitiesPage = this.operationDao.findAll(PageRequest.of(page, size, Direction.ASC, "type", "id"));
+			List<OperationEntity> allOperationsEntities = operationsEntitiesPage.getContent();
 			List<OperationBoundary> operationsBoundaryList = new ArrayList<>();
 
 			for (OperationEntity entity : allOperationsEntities) {

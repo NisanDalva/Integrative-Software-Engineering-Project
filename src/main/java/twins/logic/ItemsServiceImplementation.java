@@ -10,6 +10,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
@@ -200,12 +201,12 @@ public class ItemsServiceImplementation implements AdvancedItemService {
 	public List<ItemBoundary> getAllItems(String userSpace, String userEmail, int size, int page) {
 		UserBoundary user= usersServiceImplementation.login(userSpace, userEmail);
 		String userRole=user.getRole();
-		Iterable<ItemEntity> allEntities = this.itemDao.findAll(PageRequest.of(page, size, Direction.ASC, "name", "id"));
-
+		Page<ItemEntity> allEntitiesPage = this.itemDao.findAll(PageRequest.of(page, size, Direction.ASC, "name", "id"));
+		List<ItemEntity> allItemEntities = allEntitiesPage.getContent();
 		List<ItemBoundary> rv = new ArrayList<>();
 		
 
-		for (ItemEntity entity : allEntities) {
+		for (ItemEntity entity : allItemEntities) {
 			// TODO create a generic converter from entity to boundary
 			ItemBoundary boundary = entityToBoundary(entity);		
 			rv.add(boundary);
@@ -218,7 +219,7 @@ public class ItemsServiceImplementation implements AdvancedItemService {
 			return rv;
 		}
 		else
-			throw new AccessDeniedException(userRole + " can't get all users!");
+			throw new AccessDeniedException(userRole + " can't get all items!");
 	}
 
 }

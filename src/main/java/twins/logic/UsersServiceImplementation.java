@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
@@ -153,7 +154,8 @@ public class UsersServiceImplementation implements AdvancedUserService {
 	public List<UserBoundary> getAllUsers(String adminSpace, String adminEmail, int size, int page) {
 		UserBoundary user= this.login(adminSpace, adminEmail);
 		if(user.getRole().equals("ADMIN")) {
-		Iterable<UserEntity> allUsersEntities = this.userDao.findAll(PageRequest.of(page, size, Direction.ASC, "username", "email"));
+		Page<UserEntity> pageOfEntity = this.userDao.findAll(PageRequest.of(page, size, Direction.ASC, "username", "email"));
+		List<UserEntity> allUsersEntities = pageOfEntity.getContent();
 		List<UserBoundary> usersBoundaryList = new ArrayList<>();
 		for (UserEntity entity : allUsersEntities) {
 			UserBoundary boundary = convertToBoundary(entity);
