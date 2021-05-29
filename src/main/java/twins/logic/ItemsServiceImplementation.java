@@ -135,17 +135,17 @@ public class ItemsServiceImplementation implements AdvancedItemService {
 				if(active==true||(active==false&&userRole.equals("MANAGER")))
 					return this.entityToBoundary(entity);
 				else
-					throw new AccessDeniedException(userRole + " can't get items that not activate! (Only MANAGER)");
+					throw new RuntimeException(userRole + " can't get items that not activate! (Only MANAGER)");
 
 			} else {
-				throw new ItemNotFoundException("item with id " + itemId + "__" + itemSpace + " not available in the database");
+				throw new RuntimeException("item with id " + itemId + "__" + itemSpace + " not available in the database");
 			}
 		}
 		else
-			throw new AccessDeniedException(userRole + " can't get specific items! (Only PLAYER or MANAGER)");
+			throw new RuntimeException(userRole + " can't get specific items! (Only PLAYER or MANAGER)");
 	}
 
-	private ItemEntity boundaryToEntity(ItemBoundary boundary) {
+	public ItemEntity boundaryToEntity(ItemBoundary boundary) {
 		ItemEntity entity = new ItemEntity();
 
 		if (boundary.getItemId() != null) {

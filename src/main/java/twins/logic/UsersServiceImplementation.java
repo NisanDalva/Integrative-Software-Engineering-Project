@@ -100,7 +100,7 @@ public class UsersServiceImplementation implements AdvancedUserService {
 			UserBoundary user= convertToBoundary(existing);
 			return user;}
 		else {
-			throw new UserNotFoundException("The user email " + userEmail + " with space " + userSpace + " not found in the database"); 
+			throw new RuntimeException("The user email " + userEmail + " with space " + userSpace + " not found in the database"); 
 		}
 	}
 

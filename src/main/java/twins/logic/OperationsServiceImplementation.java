@@ -28,6 +28,8 @@ import twins.Exceptions.InvalidOperationException;
 import twins.boundaries.ItemBoundary;
 import twins.boundaries.OperationBoundary;
 import twins.boundaries.UserBoundary;
+import twins.data.ItemDao;
+import twins.data.ItemEntity;
 import twins.data.OperationDao;
 import twins.data.OperationEntity;
 
@@ -40,7 +42,12 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 	private Utils utils;
 	private JmsTemplate jmsTemplate;
 	private ObjectMapper jackson;
+	private ItemDao itemDao;
 
+	@Autowired
+	public void setItemDao(ItemDao itemDao) {
+		this.itemDao = itemDao;
+	}
 
 	@Autowired
 	public void setItemsServiceImplementation(ItemsServiceImplementation itemsServiceImplementation) {
@@ -75,22 +82,39 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 		UserBoundary user= usersServiceImplementation.login(userId.getSpace(), userId.getEmail());
 		ItemId itemId=operation.getItem().getItemId();
 		ItemBoundary item=itemsServiceImplementation.getSpecificItem(userId.getSpace(), userId.getEmail(), itemId.getSpace(),itemId.getId());
-		if(user.getRole()!="PLAYER")
-			throw new AccessDeniedException("Only Player can invoke oprerations!");
+		if(!user.getRole().equals("PLAYER"))
+			throw new RuntimeException("Only Player can invoke oprerations!");
 		if(item.getActive()==false)
-			throw new AccessDeniedException("Item need to be active to invoke oprerations!");
-		if(operation.getType() == null)
-			throw new InvalidOperationException("Operation type can't be null");
-
+			throw new RuntimeException("Item need to be active to invoke oprerations!");
+		if(operation.getType() == null) 
+			throw new RuntimeException("Operation type can't be null");
+		
+		System.err.println("after operation.getType() == null ");
+		
 		if(operation.getInvokedBy() == null || operation.getInvokedBy().getUserId() == null)
-			throw new InvalidOperationException("InvokedBy or userId is null!");
-
+			throw new RuntimeException("InvokedBy or userId is null!");
+		
+		System.err.println("after operation.getInvokedBy() == null ");
+		
 		if(operation.getItem() == null || operation.getItem().getItemId() == null
 				|| operation.getItem().getItemId().getId() == null)
-			throw new InvalidOperationException("The item or its attributes is null!");
-
+			throw new RuntimeException("The item or its attributes is null!");
+		
+		System.err.println("after operation.getItem() == null ");
+		
 		operation.getInvokedBy().getUserId().setSpace(space);
 		operation.setCreatedTimestamp(new Date());
+		
+		switch (operation.getType()) {
+		case "rank restaurant":
+			System.err.println("in operation.getType()");
+			rankRestaurant(user.getUserid().getSpace(), user.getUserid().getEmail(), item.getItemId().getSpace(),
+					item.getItemId().getId(), operation.getOperationAttributes());
+			break;
+
+		default:
+			break;
+		}
 
 		OperationEntity entity = this.boundaryToEntity(operation);
 		entity.setId(UUID.randomUUID().toString());
@@ -98,6 +122,37 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 		entity = this.operationDao.save(entity);
 		return this.entityToBoundary(entity);
 	}
+	
+	public void rankRestaurant(String userSpace, String userEmail, String itemSpace, String itemId, Map<String, Object> operationAttributes) {
+		System.err.println("in rankRestaurant");
+		ItemBoundary boundary = this.itemsServiceImplementation.getSpecificItem(userSpace, userEmail, itemSpace, itemId);
+		
+		Map<String, Object> newAttributes = boundary.getItemAttributes();
+		
+		int newRank = (int) operationAttributes.get("rank");
+		int newNumOfRankers = (int) newAttributes.get("number of rankers") + 1;
+
+		newAttributes.put("number of rankers", newNumOfRankers);
+		
+		if (newNumOfRankers == 1)
+			newAttributes.put("rank", newRank);
+		else {
+			int oldAvargeRank = (int)newAttributes.get("rank");
+			newAttributes.put("rank", getAvg(oldAvargeRank, newRank, newNumOfRankers));
+		}
+		
+		boundary.setItemAttributes(newAttributes);
+		
+		ItemEntity entity = this.itemsServiceImplementation.boundaryToEntity(boundary);
+		entity.setId(entity.getId() + "__" + userSpace);
+		this.itemDao.save(entity);
+		
+	}
+	
+	private int getAvg(int prev_avg, int x, int n)
+    {
+        return (prev_avg * (n-1) + x) / n;
+    }
 
 	@Override
 	public OperationBoundary invokeAsynchronousOperation(OperationBoundary operation) {
