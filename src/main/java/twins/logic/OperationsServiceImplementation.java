@@ -128,7 +128,8 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 			List<ItemBoundary> menu=(List<ItemBoundary>) restaurant.getItemAttributes().get("menu"); //check!!!!
 			operation=updateAttributes(operation, "menu", menu);
 			break;
-				
+		case "Place order":
+			ItemBoundary order=placeOrder(operation);
 		default:
 			break;
 		}
@@ -140,6 +141,30 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 		return this.entityToBoundary(entity);
 	}
 	
+	/*order attributes:
+	 * takeaway/delivery
+	 * delivery address
+	 * cash/credit card
+	 * restauarnt:[
+	 * 		id
+	 * 		menu:[
+	 * 			id
+	 * 			products:[
+	 * 				product:[
+	 * 					id
+	 * 					productName
+	 * 					productPrice
+	 * 				]
+	
+	 * 			]
+	 * 		]	
+	 * ] */
+	private ItemBoundary placeOrder(OperationBoundary operation) {
+		ItemBoundary restaurants=(ItemBoundary) operation.getOperationAttributes().get("restaurant");
+		
+		return null;
+	}
+
 	private OperationBoundary updateAttributes(OperationBoundary operation, String keyType,Object attributesToAdd) {
 		Map<String, Object> newAttributes = operation.getOperationAttributes();
 		newAttributes.put(keyType, attributesToAdd);
@@ -149,7 +174,7 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 
 	private List<ItemBoundary> getAllResturants(String userSpace, String userEmail) {
 		List<ItemBoundary> itemsList= this.itemsServiceImplementation.getAllItems(userSpace, userEmail);
-		itemsList.removeIf(n -> n.getType().equals("resturant"));
+		itemsList.removeIf(n -> n.getType().equals("restaurant"));
 		return itemsList;
 		
 	}
