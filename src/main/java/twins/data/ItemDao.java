@@ -11,5 +11,7 @@ public interface ItemDao extends PagingAndSortingRepository<ItemEntity, String> 
 	public List<ItemEntity> findAllByActiveAndItemAttributesLike(@Param("active") boolean active,
 			@Param("pattern") String pattern, Pageable pageable);
 	
+	public void deleteAllByTypeAndId(@Param("type") String type,
+			 Pageable pageable);
 	
 }

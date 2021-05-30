@@ -135,14 +135,14 @@ public class ItemsServiceImplementation implements AdvancedItemService {
 				if(active==true||(active==false&&userRole.equals("MANAGER")))
 					return this.entityToBoundary(entity);
 				else
-					throw new RuntimeException(userRole + " can't get items that not activate! (Only MANAGER)");
+					throw new AccessDeniedException(userRole + " can't get items that not activate! (Only MANAGER)");
 
 			} else {
-				throw new RuntimeException("item with id " + itemId + "__" + itemSpace + " not available in the database");
+				throw new ItemNotFoundException("item with id " + itemId + "__" + itemSpace + " not available in the database");
 			}
 		}
 		else
-			throw new RuntimeException(userRole + " can't get specific items! (Only PLAYER or MANAGER)");
+			throw new AccessDeniedException(userRole + " can't get specific items! (Only PLAYER or MANAGER)");
 	}
 
 	public ItemEntity boundaryToEntity(ItemBoundary boundary) {
@@ -220,6 +220,18 @@ public class ItemsServiceImplementation implements AdvancedItemService {
 		}
 		else
 			throw new AccessDeniedException(userRole + " can't get all items!");
+	}
+
+	@Override
+	@Transactional
+	public void deleteSpecificItem(String userSpace, String userEmail, ItemId itemid) {
+		String id=itemid.getId()+"__"+itemid.getSpace();
+		UserBoundary user= usersServiceImplementation.login(userSpace, userEmail);
+		if(user.getRole().equals("ADMIN"))
+			this.itemDao.deleteById(id); //DELETE BY SPACE ??
+		else
+			throw new AccessDeniedException(user.getRole() + " can't delete all items! (Only ADMIN)");
+		
 	}
 
 }

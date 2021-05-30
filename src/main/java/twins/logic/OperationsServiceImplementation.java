@@ -1,5 +1,6 @@
 package twins.logic;
 
+import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -107,11 +108,27 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 		
 		switch (operation.getType()) {
 		case "rank restaurant":
-			System.err.println("in operation.getType()");
+			//System.err.println("in operation.getType()");
 			rankRestaurant(user.getUserid().getSpace(), user.getUserid().getEmail(), item.getItemId().getSpace(),
 					item.getItemId().getId(), operation.getOperationAttributes());
 			break;
-
+		case "search restaurant":
+			ItemBoundary itemBoundary= searchRestaurant(user.getUserid().getSpace(), user.getUserid().getEmail(), item.getItemId().getSpace(),
+					item.getItemId().getId());
+			operation=updateAttributes(operation, "restaurant", itemBoundary);
+			break;
+		case "View restaurants":
+			List<ItemBoundary> itemsList=getAllResturants(user.getUserid().getSpace(),user.getUserid().getEmail());
+			operation=updateAttributes(operation,"restaurant",itemsList);
+			break;
+		case "View menu":
+			ItemBoundary restaurant=searchRestaurant(user.getUserid().getSpace(), user.getUserid().getEmail(), item.getItemId().getSpace(),
+					item.getItemId().getId());
+			
+			List<ItemBoundary> menu=(List<ItemBoundary>) restaurant.getItemAttributes().get("menu"); //check!!!!
+			operation=updateAttributes(operation, "menu", menu);
+			break;
+				
 		default:
 			break;
 		}
@@ -123,6 +140,25 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 		return this.entityToBoundary(entity);
 	}
 	
+	private OperationBoundary updateAttributes(OperationBoundary operation, String keyType,Object attributesToAdd) {
+		Map<String, Object> newAttributes = operation.getOperationAttributes();
+		newAttributes.put(keyType, attributesToAdd);
+		operation.setOperationAttributes(newAttributes);
+		return operation;
+	}
+
+	private List<ItemBoundary> getAllResturants(String userSpace, String userEmail) {
+		List<ItemBoundary> itemsList= this.itemsServiceImplementation.getAllItems(userSpace, userEmail);
+		itemsList.removeIf(n -> n.getType().equals("resturant"));
+		return itemsList;
+		
+	}
+
+	private ItemBoundary searchRestaurant(String userSpace, String userEmail, String itemSpace, String itemId) {
+		ItemBoundary boundary = this.itemsServiceImplementation.getSpecificItem(userSpace, userEmail, itemSpace, itemId);
+		return boundary;
+	}
+
 	public void rankRestaurant(String userSpace, String userEmail, String itemSpace, String itemId, Map<String, Object> operationAttributes) {
 		System.err.println("in rankRestaurant");
 		ItemBoundary boundary = this.itemsServiceImplementation.getSpecificItem(userSpace, userEmail, itemSpace, itemId);
