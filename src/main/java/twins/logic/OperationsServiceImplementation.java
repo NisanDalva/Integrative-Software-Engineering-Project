@@ -1,5 +1,7 @@
 package twins.logic;
 
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Date;
@@ -79,57 +81,103 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 	public Object invokeOperation(OperationBoundary operation) {
 		if(operation == null)
 			throw new InvalidOperationException("Operation can't be null");
-		UserId userId=operation.getInvokedBy().getUserId();
-		UserBoundary user= usersServiceImplementation.login(userId.getSpace(), userId.getEmail());
-		ItemId itemId=operation.getItem().getItemId();
-		ItemBoundary item=itemsServiceImplementation.getSpecificItem(userId.getSpace(), userId.getEmail(), itemId.getSpace(),itemId.getId());
-		if(!user.getRole().equals("PLAYER"))
-			throw new RuntimeException("Only Player can invoke oprerations!");
-		if(item.getActive()==false)
-			throw new RuntimeException("Item need to be active to invoke oprerations!");
-		if(operation.getType() == null) 
-			throw new RuntimeException("Operation type can't be null");
-		
-		System.err.println("after operation.getType() == null ");
 		
 		if(operation.getInvokedBy() == null || operation.getInvokedBy().getUserId() == null)
 			throw new RuntimeException("InvokedBy or userId is null!");
 		
-		System.err.println("after operation.getInvokedBy() == null ");
+		UserId userId=operation.getInvokedBy().getUserId();
+		UserBoundary user= usersServiceImplementation.login(userId.getSpace(), userId.getEmail());
 		
-		if(operation.getItem() == null || operation.getItem().getItemId() == null
-				|| operation.getItem().getItemId().getId() == null)
-			throw new RuntimeException("The item or its attributes is null!");
-		
-		System.err.println("after operation.getItem() == null ");
+		if(!user.getRole().equals("PLAYER"))
+			throw new RuntimeException("Only Player can invoke oprerations!");
+
+		if(operation.getType() == null) 
+			throw new RuntimeException("Operation type can't be null");
 		
 		operation.getInvokedBy().getUserId().setSpace(space);
 		operation.setCreatedTimestamp(new Date());
 		
+		
 		switch (operation.getType()) {
 		case "rank restaurant":
-			//System.err.println("in operation.getType()");
+			if(operation.getItem() == null || operation.getItem().getItemId() == null
+			|| operation.getItem().getItemId().getId() == null)
+				throw new RuntimeException("The item or its attributes is null!");
+
+			ItemId itemId=operation.getItem().getItemId();
+			ItemBoundary item=itemsServiceImplementation.getSpecificItem(userId.getSpace(), userId.getEmail(), itemId.getSpace(),itemId.getId());
+
 			rankRestaurant(user.getUserid().getSpace(), user.getUserid().getEmail(), item.getItemId().getSpace(),
 					item.getItemId().getId(), operation.getOperationAttributes());
 			break;
+			
 		case "search restaurant":
-			ItemBoundary itemBoundary= searchRestaurant(user.getUserid().getSpace(), user.getUserid().getEmail(), item.getItemId().getSpace(),
-					item.getItemId().getId());
-			operation=updateAttributes(operation, "restaurant", itemBoundary);
-			break;
+			
+			String name = "%" + (String) operation.getOperationAttributes().get("name") + "%";
+			
+			List<ItemBoundary> boundaries = this.searchRestaurantByName(user.getUserid().getSpace(), user.getUserid().getEmail(), name);
+			
+			OperationEntity entity = this.boundaryToEntity(operation);
+			entity.setId(UUID.randomUUID().toString());
+			entity = this.operationDao.save(entity);
+			
+			return boundaries.toArray(new ItemBoundary[0]);
+			
 		case "View restaurants":
 			List<ItemBoundary> itemsList=getAllResturants(user.getUserid().getSpace(),user.getUserid().getEmail());
 			operation=updateAttributes(operation,"restaurant",itemsList);
 			break;
 		case "View menu":
-			ItemBoundary restaurant=searchRestaurant(user.getUserid().getSpace(), user.getUserid().getEmail(), item.getItemId().getSpace(),
-					item.getItemId().getId());
+//			ItemBoundary restaurant=searchRestaurant(user.getUserid().getSpace(), user.getUserid().getEmail(), item.getItemId().getSpace(),
+//					item.getItemId().getId());
 			
-			List<ItemBoundary> menu=(List<ItemBoundary>) restaurant.getItemAttributes().get("menu"); //check!!!!
-			operation=updateAttributes(operation, "menu", menu);
+//			List<ItemBoundary> menu=(List<ItemBoundary>) restaurant.getItemAttributes().get("menu"); //check!!!!
+//			operation=updateAttributes(operation, "menu", menu);
+			System.err.println("www");
 			break;
-		case "Place order":
-			ItemBoundary order=placeOrder(operation);
+		
+			
+			
+			/*
+			 * TODO create item as product
+			 * 		put the real ids of product in the 'productIds' attribute
+			 * 		iterate over each id and check if is it in the database (with getSpecificItem) (do the same for restaurant id)
+			 * 		make sure all the ids in the database and save the order item and operation
+			 */
+		case "place order":
+//			ItemBoundary order=placeOrder(operation);
+			
+			Map<String, Object> attributes = operation.getOperationAttributes();
+			
+			ItemBoundary orderBoundary = new ItemBoundary();
+			
+			orderBoundary.setCreatedTimestamp(new Date());
+			
+			CreatedBy createdBy = new CreatedBy();
+			createdBy.setUserId(userId);
+			orderBoundary.setCreatedBy(createdBy);
+			
+			
+			ItemId newItemId = new ItemId();
+			newItemId.setSpace(this.space);
+			newItemId.setId(UUID.randomUUID().toString());
+			orderBoundary.setItemId(newItemId);
+			
+			orderBoundary.setName("order_" + user.getUsername() + "_" + operation.getItem().getItemId().getId());
+			
+			orderBoundary.setType("order");
+			
+			orderBoundary.setItemAttributes(attributes);
+			
+			entity = this.boundaryToEntity(operation);
+			entity.setId(UUID.randomUUID().toString());
+			entity = this.operationDao.save(entity);
+			
+			ItemEntity itemEntity = this.itemsServiceImplementation.boundaryToEntity(orderBoundary);
+			this.itemDao.save(itemEntity);
+			
+			return this.itemsServiceImplementation.entityToBoundary(itemEntity);
+			
 		default:
 			break;
 		}
@@ -141,24 +189,6 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 		return this.entityToBoundary(entity);
 	}
 	
-	/*order attributes:
-	 * takeaway/delivery
-	 * delivery address
-	 * cash/credit card
-	 * restauarnt:[
-	 * 		id
-	 * 		menu:[
-	 * 			id
-	 * 			products:[
-	 * 				product:[
-	 * 					id
-	 * 					productName
-	 * 					productPrice
-	 * 				]
-	
-	 * 			]
-	 * 		]	
-	 * ] */
 	private ItemBoundary placeOrder(OperationBoundary operation) {
 		ItemBoundary restaurants=(ItemBoundary) operation.getOperationAttributes().get("restaurant");
 		
@@ -179,10 +209,17 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 		
 	}
 
-	private ItemBoundary searchRestaurant(String userSpace, String userEmail, String itemSpace, String itemId) {
-		ItemBoundary boundary = this.itemsServiceImplementation.getSpecificItem(userSpace, userEmail, itemSpace, itemId);
-		return boundary;
+//	private ItemBoundary searchRestaurant(String userSpace, String userEmail, String itemSpace, String itemId) {
+//		ItemBoundary boundary = this.itemsServiceImplementation.getSpecificItem(userSpace, userEmail, itemSpace, itemId);
+//		return boundary;
+//	}
+	
+	private List<ItemBoundary> searchRestaurantByName(String userSpace, String userEmail, String name) {
+		List<ItemBoundary> boundaries = this.itemsServiceImplementation.getAllByActiveAndName(userSpace, userEmail, name, 1, 0);
+		
+		return boundaries;
 	}
+	
 
 	public void rankRestaurant(String userSpace, String userEmail, String itemSpace, String itemId, Map<String, Object> operationAttributes) {
 		System.err.println("in rankRestaurant");
