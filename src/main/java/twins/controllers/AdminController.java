@@ -16,9 +16,6 @@ import twins.boundaries.UserBoundary;
 import twins.logic.AdvancedItemService;
 import twins.logic.AdvancedOperationsService;
 import twins.logic.AdvancedUserService;
-import twins.logic.ItemsServiceImplementation;
-import twins.logic.OperationsServiceImplementation;
-import twins.logic.UsersServiceImplementation;
 
 @RestController
 public class AdminController {

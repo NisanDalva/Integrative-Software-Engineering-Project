@@ -34,7 +34,10 @@ public class ItemsServiceImplementation implements AdvancedItemService {
 	private String space;
 	private UsersServiceImplementation usersServiceImplementation;
 	private Utils utils;
-
+	
+	public ItemsServiceImplementation() {
+	}
+	
 	@Autowired
 	public ItemsServiceImplementation(ItemDao itemDao) {
 		super();
@@ -149,7 +152,7 @@ public class ItemsServiceImplementation implements AdvancedItemService {
 		ItemEntity entity = new ItemEntity();
 
 		if (boundary.getItemId() != null) {
-			entity.setId(boundary.getItemId().getId());
+			entity.setId(boundary.getItemId().getId() + "__" + this.space);
 		}
 
 		if (boundary.getCreatedBy() != null) {
@@ -169,11 +172,12 @@ public class ItemsServiceImplementation implements AdvancedItemService {
 		entity.setItemAttributes(this.utils.marshal(boundary.getItemAttributes()));
 		entity.setName(boundary.getName());
 		entity.setType(boundary.getType());
+		
 
 		return entity;
 	}
 
-	private ItemBoundary entityToBoundary(ItemEntity entity) {
+	public ItemBoundary entityToBoundary(ItemEntity entity) {
 		ItemBoundary boundary = new ItemBoundary();
 		String tmp[] = entity.getId().split("__");
 		boundary.setItemId(new ItemId(tmp[1],tmp[0]));
@@ -232,6 +236,23 @@ public class ItemsServiceImplementation implements AdvancedItemService {
 		else
 			throw new AccessDeniedException(user.getRole() + " can't delete all items! (Only ADMIN)");
 		
+	}
+
+	@Override
+	public List<ItemBoundary> getAllByActiveAndName(String userSpace, String userEmail, String name, int size, int page) {
+//		UserBoundary user = usersServiceImplementation.login(userSpace, userEmail);
+		
+//		List<ItemEntity> entities = this.itemDao.findAllByNameLike(name, PageRequest.of(page, size, Direction.ASC, "name", "id"));
+//		
+//		List<ItemBoundary> rv = new ArrayList<>();
+//		for(ItemEntity entity: entities) {
+//			ItemBoundary boundary = this.entityToBoundary(entity);
+//			rv.add(boundary);
+//		}
+//		
+//		
+//		return rv;
+		return null;
 	}
 
 }
