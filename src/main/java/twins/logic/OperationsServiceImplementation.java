@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,6 +83,8 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 		if(operation == null)
 			throw new InvalidOperationException("Operation can't be null");
 		
+		OperationEntity entity = this.boundaryToEntity(operation);
+		
 		if(operation.getInvokedBy() == null || operation.getInvokedBy().getUserId() == null)
 			throw new RuntimeException("InvokedBy or userId is null!");
 		
@@ -112,87 +115,162 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 			break;
 			
 		case "search restaurant":
+			return searchRestaurantByName(operation);
 			
-			String name = "%" + (String) operation.getOperationAttributes().get("name") + "%";
+		case "view restaurants":
+			return viewRestaurants(operation);
 			
-			List<ItemBoundary> boundaries = this.searchRestaurantByName(user.getUserid().getSpace(), user.getUserid().getEmail(), name);
-			
-			OperationEntity entity = this.boundaryToEntity(operation);
-			entity.setId(UUID.randomUUID().toString());
-			entity = this.operationDao.save(entity);
-			
-			return boundaries.toArray(new ItemBoundary[0]);
-			
-		case "View restaurants":
-			List<ItemBoundary> itemsList=getAllResturants(user.getUserid().getSpace(),user.getUserid().getEmail());
-			operation=updateAttributes(operation,"restaurant",itemsList);
-			break;
 		case "View menu":
 //			ItemBoundary restaurant=searchRestaurant(user.getUserid().getSpace(), user.getUserid().getEmail(), item.getItemId().getSpace(),
 //					item.getItemId().getId());
 			
 //			List<ItemBoundary> menu=(List<ItemBoundary>) restaurant.getItemAttributes().get("menu"); //check!!!!
 //			operation=updateAttributes(operation, "menu", menu);
-			System.err.println("www");
+			System.err.println();
 			break;
 		
 			
-			
-			/*
-			 * TODO create item as product
-			 * 		put the real ids of product in the 'productIds' attribute
-			 * 		iterate over each id and check if is it in the database (with getSpecificItem) (do the same for restaurant id)
-			 * 		make sure all the ids in the database and save the order item and operation
-			 */
 		case "place order":
-//			ItemBoundary order=placeOrder(operation);
-			
-			Map<String, Object> attributes = operation.getOperationAttributes();
-			
-			ItemBoundary orderBoundary = new ItemBoundary();
-			
-			orderBoundary.setCreatedTimestamp(new Date());
-			
-			CreatedBy createdBy = new CreatedBy();
-			createdBy.setUserId(userId);
-			orderBoundary.setCreatedBy(createdBy);
-			
-			
-			ItemId newItemId = new ItemId();
-			newItemId.setSpace(this.space);
-			newItemId.setId(UUID.randomUUID().toString());
-			orderBoundary.setItemId(newItemId);
-			
-			orderBoundary.setName("order_" + user.getUsername() + "_" + operation.getItem().getItemId().getId());
-			
-			orderBoundary.setType("order");
-			
-			orderBoundary.setItemAttributes(attributes);
-			
-			entity = this.boundaryToEntity(operation);
-			entity.setId(UUID.randomUUID().toString());
-			entity = this.operationDao.save(entity);
-			
-			ItemEntity itemEntity = this.itemsServiceImplementation.boundaryToEntity(orderBoundary);
-			this.itemDao.save(itemEntity);
-			
-			return this.itemsServiceImplementation.entityToBoundary(itemEntity);
+			return placeOrder(operation, entity, user);
 			
 		default:
 			break;
 		}
 
-		OperationEntity entity = this.boundaryToEntity(operation);
+//		OperationEntity entity = this.boundaryToEntity(operation);
 		entity.setId(UUID.randomUUID().toString());
 
 		entity = this.operationDao.save(entity);
 		return this.entityToBoundary(entity);
 	}
 	
-	private ItemBoundary placeOrder(OperationBoundary operation) {
-		ItemBoundary restaurants=(ItemBoundary) operation.getOperationAttributes().get("restaurant");
+	public ItemBoundary[] searchRestaurantByName(OperationBoundary operation) {
+		int page = (int) operation.getOperationAttributes().get("page");
+		int size = (int) operation.getOperationAttributes().get("size");
 		
-		return null;
+		String name = "%" + (String) operation.getOperationAttributes().get("name") + "%";
+		
+		List<ItemEntity> entities = this.itemDao.findAllByActiveAndNameLike(true, name, PageRequest.of(page, size, Direction.ASC, "name", "id"));
+		List<ItemBoundary> rv = new ArrayList<>();
+
+		for(ItemEntity e: entities) {
+			ItemBoundary it = this.itemsServiceImplementation.entityToBoundary(e);
+			rv.add(it);
+		}
+
+		return rv.toArray(new ItemBoundary[0]);
+	}
+	
+	public ItemBoundary[] viewRestaurants(OperationBoundary operation) {
+		
+		int page = (int) operation.getOperationAttributes().get("page");
+		int size = (int) operation.getOperationAttributes().get("size");
+
+		List<ItemEntity> entities = this.itemDao.findAllByTypeAndActive("restaurant", true, PageRequest.of(page, size, Direction.ASC, "name", "id"));
+		List<ItemBoundary> rv = new ArrayList<>();
+
+		for(ItemEntity e: entities) {
+			ItemBoundary it = this.itemsServiceImplementation.entityToBoundary(e);
+			rv.add(it);
+		}
+
+		return rv.toArray(new ItemBoundary[0]);
+	}
+
+	public void rankRestaurant(String userSpace, String userEmail, String itemSpace, String itemId, Map<String, Object> operationAttributes) {
+		ItemBoundary boundary = this.itemsServiceImplementation.getSpecificItem(userSpace, userEmail, itemSpace, itemId);
+		
+		Map<String, Object> newAttributes = boundary.getItemAttributes();
+		
+		int newRank = (int) operationAttributes.get("rank");
+		int newNumOfRankers = (int) newAttributes.get("number of rankers") + 1;
+
+		newAttributes.put("number of rankers", newNumOfRankers);
+		
+		if (newNumOfRankers == 1)
+			newAttributes.put("rank", newRank);
+		else {
+			int oldAvargeRank = (int)newAttributes.get("rank");
+			newAttributes.put("rank", getAvg(oldAvargeRank, newRank, newNumOfRankers));
+		}
+		
+		boundary.setItemAttributes(newAttributes);
+		
+		ItemEntity entity = this.itemsServiceImplementation.boundaryToEntity(boundary);
+
+		entity.setId(entity.getId());
+		this.itemDao.save(entity);
+		
+	}
+	
+	private int getAvg(int prev_avg, int x, int n)
+    {
+        return (prev_avg * (n-1) + x) / n;
+    }
+	
+	private ItemBoundary placeOrder(OperationBoundary operation, OperationEntity entity, UserBoundary user) {
+		Map<String, Object> attributes = operation.getOperationAttributes();
+		
+		// make sure the restaurant is available in the database
+		ItemId itemId = operation.getItem().getItemId();		
+		this.itemsServiceImplementation.getSpecificItem(user.getUserid().getSpace(), user.getUserid().getEmail(), itemId.getSpace(),itemId.getId());
+		
+		
+		// make sure all the products id is available, and put them on a list
+		@SuppressWarnings("unchecked")
+		List<String> productsIds = (List<String>) attributes.get("productIds");
+		List<ItemEntity> products = new ArrayList<>();
+		
+		for (String s: productsIds) {
+			Optional<ItemEntity> op = this.itemDao.findById(s + "__" + this.space);
+			
+			if (op.isPresent())
+				products.add(op.get());
+			else
+				throw new RuntimeException("product with id " + s + " is not available in the database");
+		}
+		
+		// calculate the total price of products
+		int totalOrderPrice = 0;
+		for(ItemEntity e: products) {
+			int price = (int) this.itemsServiceImplementation.entityToBoundary(e).getItemAttributes().get("price");
+			totalOrderPrice += price;
+		}
+		
+		// create a boundary of item with type 'order'
+		ItemBoundary orderBoundary = new ItemBoundary();
+		
+		orderBoundary.setCreatedTimestamp(new Date());
+		
+		CreatedBy createdBy = new CreatedBy();
+		createdBy.setUserId(user.getUserid());
+		orderBoundary.setCreatedBy(createdBy);
+		
+		ItemId newItemId = new ItemId();
+		newItemId.setSpace(this.space);
+		newItemId.setId(UUID.randomUUID().toString());
+		orderBoundary.setItemId(newItemId);
+		
+		orderBoundary.setName("order_" + user.getUsername() + "_" + operation.getItem().getItemId().getId());
+		
+		orderBoundary.setType("order");
+		
+		orderBoundary.setItemAttributes(attributes);
+		orderBoundary.getItemAttributes().put("total price", totalOrderPrice);
+		
+		// update the operation entity and store it on 'OPERATIONS' table
+		operation.getOperationAttributes().put("total price", totalOrderPrice);
+		entity = this.boundaryToEntity(operation);
+		entity.setId(UUID.randomUUID().toString());
+		entity = this.operationDao.save(entity);
+		
+		// store the order as an entity in 'ITEMS' table
+		ItemEntity itemEntity = this.itemsServiceImplementation.boundaryToEntity(orderBoundary);
+		this.itemDao.save(itemEntity);
+		
+		// return the result to the user
+		return this.itemsServiceImplementation.entityToBoundary(itemEntity);
+		
 	}
 
 	private OperationBoundary updateAttributes(OperationBoundary operation, String keyType,Object attributesToAdd) {
@@ -214,43 +292,29 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 //		return boundary;
 //	}
 	
-	private List<ItemBoundary> searchRestaurantByName(String userSpace, String userEmail, String name) {
-		List<ItemBoundary> boundaries = this.itemsServiceImplementation.getAllByActiveAndName(userSpace, userEmail, name, 1, 0);
+	private List<ItemBoundary> searchRestaurantByName(String userSpace, String userEmail, String name, int size, int page) {
+//		List<ItemBoundary> boundaries = this.itemsServiceImplementation.getAllByActiveAndName(userSpace, userEmail, name, size, page);
+//		
+//		return boundaries;
 		
-		return boundaries;
+//		int page = (int) operation.getOperationAttributes().get("page");
+//		int size = (int) operation.getOperationAttributes().get("size");
+//		
+//		String name = "%" + (String) operation.getOperationAttributes().get("name") + "%";
+//		
+//		List<ItemBoundary> boundaries = this.searchRestaurantByName(user.getUserid().getSpace(), user.getUserid().getEmail(), name, size, page);
+//		
+//		
+//		entity.setId(UUID.randomUUID().toString());
+//		entity = this.operationDao.save(entity);
+//		
+//		return boundaries.toArray(new ItemBoundary[0]);
+		return null;
 	}
 	
 
-	public void rankRestaurant(String userSpace, String userEmail, String itemSpace, String itemId, Map<String, Object> operationAttributes) {
-		System.err.println("in rankRestaurant");
-		ItemBoundary boundary = this.itemsServiceImplementation.getSpecificItem(userSpace, userEmail, itemSpace, itemId);
-		
-		Map<String, Object> newAttributes = boundary.getItemAttributes();
-		
-		int newRank = (int) operationAttributes.get("rank");
-		int newNumOfRankers = (int) newAttributes.get("number of rankers") + 1;
 
-		newAttributes.put("number of rankers", newNumOfRankers);
-		
-		if (newNumOfRankers == 1)
-			newAttributes.put("rank", newRank);
-		else {
-			int oldAvargeRank = (int)newAttributes.get("rank");
-			newAttributes.put("rank", getAvg(oldAvargeRank, newRank, newNumOfRankers));
-		}
-		
-		boundary.setItemAttributes(newAttributes);
-		
-		ItemEntity entity = this.itemsServiceImplementation.boundaryToEntity(boundary);
-		entity.setId(entity.getId() + "__" + userSpace);
-		this.itemDao.save(entity);
-		
-	}
-	
-	private int getAvg(int prev_avg, int x, int n)
-    {
-        return (prev_avg * (n-1) + x) / n;
-    }
+
 
 	@Override
 	public OperationBoundary invokeAsynchronousOperation(OperationBoundary operation) {

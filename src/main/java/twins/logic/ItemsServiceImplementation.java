@@ -242,16 +242,17 @@ public class ItemsServiceImplementation implements AdvancedItemService {
 	public List<ItemBoundary> getAllByActiveAndName(String userSpace, String userEmail, String name, int size, int page) {
 //		UserBoundary user = usersServiceImplementation.login(userSpace, userEmail);
 		
-		List<ItemEntity> entities = this.itemDao.findAllByNameLike(name, PageRequest.of(page, size, Direction.ASC, "name", "id"));
-		
-		List<ItemBoundary> rv = new ArrayList<>();
-		for(ItemEntity entity: entities) {
-			ItemBoundary boundary = this.entityToBoundary(entity);
-			rv.add(boundary);
-		}
-		
-		
-		return rv;
+//		List<ItemEntity> entities = this.itemDao.findAllByNameLike(name, PageRequest.of(page, size, Direction.ASC, "name", "id"));
+//		
+//		List<ItemBoundary> rv = new ArrayList<>();
+//		for(ItemEntity entity: entities) {
+//			ItemBoundary boundary = this.entityToBoundary(entity);
+//			rv.add(boundary);
+//		}
+//		
+//		
+//		return rv;
+		return null;
 	}
 
 }
