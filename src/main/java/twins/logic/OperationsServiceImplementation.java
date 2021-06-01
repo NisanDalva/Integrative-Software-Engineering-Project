@@ -29,6 +29,7 @@ import twins.OperationId;
 import twins.UserId;
 import twins.Exceptions.AccessDeniedException;
 import twins.Exceptions.InvalidOperationException;
+import twins.Exceptions.UnsupportedOperationException;
 import twins.boundaries.ItemBoundary;
 import twins.boundaries.OperationBoundary;
 import twins.boundaries.UserBoundary;
@@ -134,7 +135,7 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 			return placeOrder(operation, entity, user);
 			
 		default:
-			break;
+			throw new UnsupportedOperationException("operation " + operation.getType() + " is unsupported");
 		}
 
 //		OperationEntity entity = this.boundaryToEntity(operation);
