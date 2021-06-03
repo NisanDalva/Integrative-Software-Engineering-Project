@@ -1,11 +1,8 @@
 package twins.logic;
 
-import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 
-import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -141,18 +138,44 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 		return this.entityToBoundary(entity);
 	}
 	
-	private ItemBoundary viewMenu(OperationBoundary operation) {
+	private ItemBoundary[] viewMenu(OperationBoundary operation) {
 		UserId userid= operation.getInvokedBy().getUserId();
 		ItemId item=operation.getItem().getItemId();
 		ItemBoundary restaurant= this.itemsServiceImplementation.getSpecificItem(userid.getSpace(), userid.getEmail(),item.getSpace(), item.getId());
-		if(restaurant.getItemAttributes().containsValue(operation.getOperationAttributes().get("menuId"))) {
-			ItemBoundary menu= this.itemsServiceImplementation.getSpecificItem(userid.getSpace(), userid.getEmail(),item.getSpace(),""+ operation.getOperationAttributes().get("menuId"));
-			return menu;
-		}
-		else
-			throw new UnsupportedOperationException("Menu cant found in this restaurant!");
+//		if(restaurant.getItemAttributes().containsValue(operation.getOperationAttributes().get("menuId"))) {
+//			ItemBoundary menu= this.itemsServiceImplementation.getSpecificItem(userid.getSpace(), userid.getEmail(),item.getSpace(),""+ operation.getOperationAttributes().get("menuId"));
+//			return menu;
+//		}
+//		else
+//			throw new UnsupportedOperationException("Menu cant found in this restaurant!");
 			
 
+		List<String> menuIds = (List<String>) restaurant.getItemAttributes().get("menus");
+		List<ItemEntity> menus = new ArrayList<>();
+		List<ItemBoundary> rv = new ArrayList<>();
+		
+		for (String s: menuIds) {
+			Optional<ItemEntity> op = this.itemDao.findById(s + "__" + this.space);
+			
+			if (op.isPresent())
+				menus.add(op.get());
+			else
+				throw new RuntimeException("menu with id " + s + " is not available in the database");
+		}
+		
+		
+		for(ItemEntity e: menus) {
+			ItemBoundary it = this.itemsServiceImplementation.entityToBoundary(e);
+			rv.add(it);
+		}
+		
+		
+		OperationEntity entity = this.boundaryToEntity(operation);
+		entity.setId(UUID.randomUUID().toString());
+		this.operationDao.save(entity);
+		
+		
+		return rv.toArray(new ItemBoundary[0]);
 		
 	}
 
@@ -169,7 +192,11 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 			ItemBoundary it = this.itemsServiceImplementation.entityToBoundary(e);
 			rv.add(it);
 		}
-
+		
+		OperationEntity entity = this.boundaryToEntity(operation);
+		entity.setId(UUID.randomUUID().toString());
+		this.operationDao.save(entity);
+		
 		return rv.toArray(new ItemBoundary[0]);
 	}
 	
@@ -185,7 +212,11 @@ public class OperationsServiceImplementation implements AdvancedOperationsServic
 			ItemBoundary it = this.itemsServiceImplementation.entityToBoundary(e);
 			rv.add(it);
 		}
-
+		
+		OperationEntity entity = this.boundaryToEntity(operation);
+		entity.setId(UUID.randomUUID().toString());
+		this.operationDao.save(entity);
+		
 		return rv.toArray(new ItemBoundary[0]);
 	}
 
