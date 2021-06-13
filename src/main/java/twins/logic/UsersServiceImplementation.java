@@ -6,12 +6,15 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import twins.UserId;
+import twins.Exceptions.AccessDeniedException;
+import twins.Exceptions.InvalidUserDetailsException;
+import twins.Exceptions.UserNotFoundException;
 import twins.boundaries.UserBoundary;
 import twins.data.UserDao;
 import twins.data.UserEntity;
@@ -38,7 +41,6 @@ public class UsersServiceImplementation implements AdvancedUserService {
 	public UserBoundary createUser(UserBoundary user) {
 		UserEntity entity = this.convertFromBoundary(user);
 		
-		
 		entity = this.userDao.save(entity);
 		return this.convertToBoundary(entity);
 	}
@@ -60,24 +62,24 @@ public class UsersServiceImplementation implements AdvancedUserService {
 
 		
 		if (UserRole.valueOf(user.getRole())==null ) /// check later what valueOf returns!!!!
-			throw new RuntimeException("invalid role");
+			throw new InvalidUserDetailsException(user.getRole() + " is invalid role");
 		
 //		System.err.println(user.getUserid().getEmail());
 //		System.err.println(user.getUserid());
 		
 		if(!isValidEmailAddress(user.getUserid().getEmail()))
-			throw new RuntimeException("wrong email");
+			throw new InvalidUserDetailsException(user.getUserid().getEmail() + " is invalid email");
 		if(user.getUsername()==null)
-			throw new RuntimeException("User name cant be null!");
+			throw new InvalidUserDetailsException("User name can't be null!");
 		if(user.getAvatar() == null&&user.getAvatar() == "")
-			throw new RuntimeException("invalid avatar");
+			throw new InvalidUserDetailsException("Avatar can't be null or empty");
 			
 		entity.setRole(user.getRole());
 		entity.setEmail(user.getUserid().getEmail()+"__"+this.springApplictionName);
 		entity.setUsername(user.getUsername());
 		entity.setAvatar(user.getAvatar());
 			
-			
+		
 		return entity;	
 	}
 	
@@ -98,7 +100,7 @@ public class UsersServiceImplementation implements AdvancedUserService {
 			UserBoundary user= convertToBoundary(existing);
 			return user;}
 		else {
-			throw new RuntimeException(); // TODO: return status = 404 instead of status = 500 
+			throw new RuntimeException("The user email " + userEmail + " with space " + userSpace + " not found in the database"); 
 		}
 	}
 
@@ -118,9 +120,9 @@ public class UsersServiceImplementation implements AdvancedUserService {
 				
 				this.userDao.save(updatedEntity);
 				UserBoundary user= convertToBoundary(updatedEntity);
-				return user;}
-			else {
-				throw new RuntimeException(); // TODO: return status = 404 instead of status = 500 
+				return user;
+			} else {
+				throw new UserNotFoundException("The user email " + userEmail + " with space " + userSpace + " not found in the database"); 
 			}
 			
 	}
@@ -145,16 +147,15 @@ public class UsersServiceImplementation implements AdvancedUserService {
 		if(user.getRole().equals("ADMIN")) 
 			this.userDao.deleteAll();
 		else
-			throw new RuntimeException("Only admin can delete all users!");
-			
-	
+			throw new AccessDeniedException(user.getRole() + " can't delete all users! (Only ADMIN)");
 	}
 
 	@Override
 	public List<UserBoundary> getAllUsers(String adminSpace, String adminEmail, int size, int page) {
 		UserBoundary user= this.login(adminSpace, adminEmail);
 		if(user.getRole().equals("ADMIN")) {
-		Iterable<UserEntity> allUsersEntities = this.userDao.findAll(PageRequest.of(page, size, Direction.ASC, "username", "email"));
+		Page<UserEntity> pageOfEntity = this.userDao.findAll(PageRequest.of(page, size, Direction.ASC, "username", "email"));
+		List<UserEntity> allUsersEntities = pageOfEntity.getContent();
 		List<UserBoundary> usersBoundaryList = new ArrayList<>();
 		for (UserEntity entity : allUsersEntities) {
 			UserBoundary boundary = convertToBoundary(entity);
@@ -163,7 +164,7 @@ public class UsersServiceImplementation implements AdvancedUserService {
 		return usersBoundaryList;
 		}
 		else
-			throw new RuntimeException("Only admin can get all users!");
+			throw new AccessDeniedException(user.getRole() + " can't get all users! (Only ADMIN)");
 	}
 
 }

@@ -13,29 +13,29 @@ import org.springframework.web.bind.annotation.RestController;
 
 import twins.boundaries.OperationBoundary;
 import twins.boundaries.UserBoundary;
-import twins.logic.ItemsServiceImplementation;
-import twins.logic.OperationsServiceImplementation;
-import twins.logic.UsersServiceImplementation;
+import twins.logic.AdvancedItemService;
+import twins.logic.AdvancedOperationsService;
+import twins.logic.AdvancedUserService;
 
 @RestController
 public class AdminController {
-	private ItemsServiceImplementation itemsServiceImplementation;
-	private UsersServiceImplementation usersServiceImplementation;
-	private OperationsServiceImplementation operationsServiceImplementation;
+	private AdvancedItemService advancedItemsService;
+	private AdvancedUserService advancedUserService;
+	private AdvancedOperationsService advancedOperationsService;
 	
 	@Autowired
-	public void setItemsServiceImplementation(ItemsServiceImplementation itemsServiceImplementation) {
-		this.itemsServiceImplementation = itemsServiceImplementation;
+	public void setItemsServiceImplementation(AdvancedItemService advancedItemsServiceImp) {
+		this.advancedItemsService = advancedItemsServiceImp;
 	}
 	
 	@Autowired
-	public void setUsersServiceImplementation(UsersServiceImplementation usersServiceImplementation) {
-		this.usersServiceImplementation = usersServiceImplementation;
+	public void setUsersServiceImplementation(AdvancedUserService advancedUserService) {
+		this.advancedUserService = advancedUserService;
 	}
 	
 	@Autowired
-	public void setOperationsServiceImplementation(OperationsServiceImplementation operationsServiceImplementation) {
-		this.operationsServiceImplementation = operationsServiceImplementation;
+	public void setOperationsServiceImplementation(AdvancedOperationsService advancedOperationsService) {
+		this.advancedOperationsService = advancedOperationsService;
 	}
 	
 	
@@ -45,7 +45,7 @@ public class AdminController {
 	public void deleteAllUsersBySpace (@PathVariable("userSpace") String userSpace,
 			@PathVariable("userEmail") String userEmail) {
 		
-		this.usersServiceImplementation.deleteAllUsers(userSpace, userEmail);
+		this.advancedUserService.deleteAllUsers(userSpace, userEmail);
 	}
 	
 	
@@ -55,7 +55,7 @@ public class AdminController {
 	public void deleteAllItemsBySpace (@PathVariable("userSpace") String userSpace,
 			@PathVariable("userEmail") String userEmail) {
 		
-		this.itemsServiceImplementation.deleteAllItems(userSpace, userEmail);
+		this.advancedItemsService.deleteAllItems(userSpace, userEmail);
 	}
 	
 	
@@ -65,7 +65,7 @@ public class AdminController {
 	public void deleteAllOperationsBySpace (@PathVariable("userSpace") String userSpace,
 			@PathVariable("userEmail") String userEmail) {
 		
-		this.operationsServiceImplementation.deleteAllOperations(userSpace, userEmail);
+		this.advancedOperationsService.deleteAllOperations(userSpace, userEmail);
 	}
 	
 	
@@ -78,7 +78,7 @@ public class AdminController {
 				@RequestParam(name="size", required = false, defaultValue = "5") int size,
 				@RequestParam(name="page", required = false, defaultValue = "0")  int page) {
 			
-		List<UserBoundary> rv = this.usersServiceImplementation.getAllUsers(userSpace, userEmail);
+		List<UserBoundary> rv = this.advancedUserService.getAllUsers(userSpace, userEmail, size, page);
 		
 		return rv.toArray(new UserBoundary[0]);
 	}
@@ -93,7 +93,7 @@ public class AdminController {
 			@RequestParam(name="size", required = false, defaultValue = "5") int size,
 			@RequestParam(name="page", required = false, defaultValue = "0")  int page) {
 
-		List<OperationBoundary> rv = this.operationsServiceImplementation.getAllOperations(userSpace, userEmail);
+		List<OperationBoundary> rv = this.advancedOperationsService.getAllOperations(userSpace, userEmail,size, page );
 
 		return rv.toArray(new OperationBoundary[0]);
 	}

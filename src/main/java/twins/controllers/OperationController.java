@@ -9,16 +9,17 @@ import org.springframework.web.bind.annotation.RestController;
 
 import twins.OperationId;
 import twins.boundaries.OperationBoundary;
+import twins.logic.AdvancedOperationsService;
 import twins.logic.OperationsServiceImplementation;
 
 
 @RestController
 public class OperationController {
-	private OperationsServiceImplementation operationsServiceImplementation;
+	private AdvancedOperationsService advancedOperationsService;
 	
 	@Autowired
 	public void setOperationsServiceImplementation(OperationsServiceImplementation operationsServiceImplementation) {
-		this.operationsServiceImplementation = operationsServiceImplementation;
+		this.advancedOperationsService = operationsServiceImplementation;
 	}
 	
 	
@@ -31,7 +32,7 @@ public class OperationController {
 			produces = MediaType.APPLICATION_JSON_VALUE,
 			consumes = MediaType.APPLICATION_JSON_VALUE)
 	public Object invokeOperation (@RequestBody OperationBoundary input) {
-		return this.operationsServiceImplementation.invokeOperation(input);
+		return this.advancedOperationsService.invokeOperation(input);
 	}
 	
 	@RequestMapping(
@@ -40,6 +41,6 @@ public class OperationController {
 			produces = MediaType.APPLICATION_JSON_VALUE,
 			consumes = MediaType.APPLICATION_JSON_VALUE)
 	public OperationBoundary asyncOperation (@RequestBody OperationBoundary input) {
-		return this.operationsServiceImplementation.invokeAsynchronousOperation(input);
+		return this.advancedOperationsService.sendAndForget(input);
 	}
 }

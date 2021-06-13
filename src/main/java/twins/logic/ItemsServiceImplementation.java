@@ -10,17 +10,19 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import twins.CreatedBy;
 import twins.ItemId;
 import twins.Location;
 import twins.UserId;
+import twins.Exceptions.AccessDeniedException;
+import twins.Exceptions.ItemNotFoundException;
 import twins.boundaries.ItemBoundary;
 import twins.boundaries.UserBoundary;
 import twins.data.ItemDao;
@@ -29,20 +31,27 @@ import twins.data.ItemEntity;
 @Service
 public class ItemsServiceImplementation implements AdvancedItemService {
 	private ItemDao itemDao;
-	private ObjectMapper jackson;
 	private String space;
 	private UsersServiceImplementation usersServiceImplementation;
-
+	private Utils utils;
+	
+	public ItemsServiceImplementation() {
+	}
+	
 	@Autowired
 	public ItemsServiceImplementation(ItemDao itemDao) {
 		super();
 		this.itemDao = itemDao;
-		this.jackson = new ObjectMapper();
 	}
 
 	@Autowired
 	public void setUsersServiceImplementation(UsersServiceImplementation usersServiceImplementation) {
 		this.usersServiceImplementation = usersServiceImplementation;
+	}
+	
+	@Autowired
+	public void setUtils(Utils utils) {
+		this.utils = utils;
 	}
 
 	@Value("${spring.application.name}")
@@ -65,12 +74,11 @@ public class ItemsServiceImplementation implements AdvancedItemService {
 
 			entity = this.itemDao.save(entity);
 
-
 			return this.entityToBoundary(entity);
 
 		}
 		else
-			throw new RuntimeException("Only manager can create items!");
+			throw new AccessDeniedException(user.getRole() + " can't create items! (Only MANAGER)");
 
 	}
 
@@ -94,12 +102,12 @@ public class ItemsServiceImplementation implements AdvancedItemService {
 				this.itemDao.save(updated);
 
 			}else {
-				throw new RuntimeException(); // TODO: return status = 404 instead of status = 500 
+				throw new ItemNotFoundException("item with id " + itemId + "__" + itemSpace + " not available in the database");
 			}
 			return this.entityToBoundary(updated);
 		}
 		else
-			throw new RuntimeException("Only manager can update item!");
+			throw new AccessDeniedException(user.getRole() + " can't update item! (Only MANAGER)");
 	}
 
 	// TODO make sure race conditions are handled
@@ -122,7 +130,7 @@ public class ItemsServiceImplementation implements AdvancedItemService {
 	public ItemBoundary getSpecificItem(String userSpace, String userEmail, String itemSpace, String itemId) {
 		UserBoundary user= usersServiceImplementation.login(userSpace, userEmail);
 		String userRole=user.getRole();
-		if(userRole.equals("MANAGER")||userRole.equals("Player")) {
+		if(userRole.equals("MANAGER")||userRole.equals("PLAYER")) {
 			Optional<ItemEntity> op = this.itemDao.findById(itemId + "__" + itemSpace); //check how to get specific item. 
 			if (op.isPresent()) {
 				ItemEntity entity = op.get();
@@ -130,23 +138,21 @@ public class ItemsServiceImplementation implements AdvancedItemService {
 				if(active==true||(active==false&&userRole.equals("MANAGER")))
 					return this.entityToBoundary(entity);
 				else
-					throw new RuntimeException("Only manager can get items that not activate!");
+					throw new AccessDeniedException(userRole + " can't get items that not activate! (Only MANAGER)");
 
 			} else {
-				throw new RuntimeException(); // TODO: return status = 404 instead of status = 500 
+				throw new ItemNotFoundException("item with id " + itemId + "__" + itemSpace + " not available in the database");
 			}
 		}
 		else
-			throw new RuntimeException("Admin cant get specific items!");
-
-
+			throw new AccessDeniedException(userRole + " can't get specific items! (Only PLAYER or MANAGER)");
 	}
 
-	private ItemEntity boundaryToEntity(ItemBoundary boundary) {
+	public ItemEntity boundaryToEntity(ItemBoundary boundary) {
 		ItemEntity entity = new ItemEntity();
 
 		if (boundary.getItemId() != null) {
-			entity.setId(boundary.getItemId().getId());
+			entity.setId(boundary.getItemId().getId() + "__" + this.space);
 		}
 
 		if (boundary.getCreatedBy() != null) {
@@ -163,14 +169,15 @@ public class ItemsServiceImplementation implements AdvancedItemService {
 
 		entity.setActive(boundary.getActive());
 		entity.setCreatedTimestamp(boundary.getCreatedTimestamp());
-		entity.setItemAttributes(this.marshal(boundary.getItemAttributes()));
+		entity.setItemAttributes(this.utils.marshal(boundary.getItemAttributes()));
 		entity.setName(boundary.getName());
 		entity.setType(boundary.getType());
+		
 
 		return entity;
 	}
 
-	private ItemBoundary entityToBoundary(ItemEntity entity) {
+	public ItemBoundary entityToBoundary(ItemEntity entity) {
 		ItemBoundary boundary = new ItemBoundary();
 		String tmp[] = entity.getId().split("__");
 		boundary.setItemId(new ItemId(tmp[1],tmp[0]));
@@ -180,7 +187,7 @@ public class ItemsServiceImplementation implements AdvancedItemService {
 		boundary.setCreatedTimestamp(entity.getCreatedTimestamp());
 		boundary.setLocation(new Location(entity.getLat(),entity.getLng()));
 		boundary.setCreatedBy(new CreatedBy(new UserId(entity.getUserSpace(),entity.getEmail())));
-		boundary.setItemAttributes(this.unmarshal(entity.getItemAttributes(), Map.class));
+		boundary.setItemAttributes(this.utils.unmarshal(entity.getItemAttributes(), Map.class));
 		return boundary;
 	}
 
@@ -191,38 +198,19 @@ public class ItemsServiceImplementation implements AdvancedItemService {
 		if(user.getRole().equals("ADMIN"))
 			this.itemDao.deleteAll(); //DELETE BY SPACE ??
 		else
-			throw new RuntimeException("Only admin delete all items!");
-	}
-
-	// use Jackson to convert JSON to Object
-	private <T> T unmarshal(String json, Class<T> type) {
-		try {
-			return this.jackson
-					.readValue(json, type);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	private String marshal(Object moreDetails) {
-		try {
-			return this.jackson
-					.writeValueAsString(moreDetails);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+			throw new AccessDeniedException(user.getRole() + " can't delete all items! (Only ADMIN)");
 	}
 
 	@Override
 	public List<ItemBoundary> getAllItems(String userSpace, String userEmail, int size, int page) {
 		UserBoundary user= usersServiceImplementation.login(userSpace, userEmail);
 		String userRole=user.getRole();
-		Iterable<ItemEntity> allEntities = this.itemDao.findAll(PageRequest.of(page, size, Direction.ASC, "name", "id"));
-
+		Page<ItemEntity> allEntitiesPage = this.itemDao.findAll(PageRequest.of(page, size, Direction.ASC, "name", "id"));
+		List<ItemEntity> allItemEntities = allEntitiesPage.getContent();
 		List<ItemBoundary> rv = new ArrayList<>();
 		
 
-		for (ItemEntity entity : allEntities) {
+		for (ItemEntity entity : allItemEntities) {
 			// TODO create a generic converter from entity to boundary
 			ItemBoundary boundary = entityToBoundary(entity);		
 			rv.add(boundary);
@@ -233,12 +221,38 @@ public class ItemsServiceImplementation implements AdvancedItemService {
 			rv.removeIf(n -> n.getActive().equals(false));
 			//rv.stream().filter(n->n.getActive().equals(false)) //plan B
 			return rv;
-			
 		}
 		else
-			throw new RuntimeException("admin cant get all users!");
+			throw new AccessDeniedException(userRole + " can't get all items!");
 	}
 
+	@Override
+	@Transactional
+	public void deleteSpecificItem(String userSpace, String userEmail, ItemId itemid) {
+		String id=itemid.getId()+"__"+itemid.getSpace();
+		UserBoundary user= usersServiceImplementation.login(userSpace, userEmail);
+		if(user.getRole().equals("ADMIN"))
+			this.itemDao.deleteById(id); //DELETE BY SPACE ??
+		else
+			throw new AccessDeniedException(user.getRole() + " can't delete all items! (Only ADMIN)");
+		
+	}
 
+	@Override
+	public List<ItemBoundary> getAllByActiveAndName(String userSpace, String userEmail, String name, int size, int page) {
+//		UserBoundary user = usersServiceImplementation.login(userSpace, userEmail);
+		
+//		List<ItemEntity> entities = this.itemDao.findAllByNameLike(name, PageRequest.of(page, size, Direction.ASC, "name", "id"));
+//		
+//		List<ItemBoundary> rv = new ArrayList<>();
+//		for(ItemEntity entity: entities) {
+//			ItemBoundary boundary = this.entityToBoundary(entity);
+//			rv.add(boundary);
+//		}
+//		
+//		
+//		return rv;
+		return null;
+	}
 
 }
